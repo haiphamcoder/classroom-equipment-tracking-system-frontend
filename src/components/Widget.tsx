@@ -2,7 +2,10 @@ import "../styles/Widget.scss";
 import KeyboardArrowUp from '@mui/icons-material/KeyboardArrowUp';
 import ListSharp from '@mui/icons-material/ListSharp';
 import DeviceHub from '@mui/icons-material/DeviceHub'
-
+import NewDevicesMenu from "./NewDevicesMenu";
+import NewTicketsMenu from "./NewTicketsMenu";
+import ClickableText from "./ClickableText";
+import { Link } from "react-router-dom";
 const Widget = ({ type }: { type: string }) => {
   let data;
 
@@ -13,9 +16,16 @@ const Widget = ({ type }: { type: string }) => {
   switch (type) {
     case "tickets":
       data = {
-        tilte: "Tickets",
+        tilte: <div className="New tickets" >
+          <NewTicketsMenu />
+        </div>,
         amount: false,
-        link: "See all tickets",
+        link: <div className="See all tickets">
+          <ClickableText text="See all tickets" onClick={() => {
+            <Link to="/tickets" style={{ textDecoration: "none" }}>
+            </Link>
+          }} />
+        </div>,
         icon: (
           <ListSharp
             className="icon"
@@ -31,8 +41,15 @@ const Widget = ({ type }: { type: string }) => {
       break;
     case "devices":
       data = {
-        tilte: "Create Ticket",
-        link: "See all devices",
+        tilte: <div className="New devices" >
+          <NewDevicesMenu />
+        </div>,
+        link: <div className="See all devices">
+          <ClickableText text="See all devices" onClick={() => {
+            <Link to="/devices" style={{ textDecoration: "none" }}>
+            </Link>
+          }} />
+        </div>,
         icon: (
           <DeviceHub className="icon"
             style={

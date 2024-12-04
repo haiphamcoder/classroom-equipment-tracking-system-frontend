@@ -1,12 +1,9 @@
-import { BrowserRouter, Router } from "react-router-dom";
+import { BrowserRouter, Outlet, Router } from "react-router-dom";
 import "./App.scss";
-import AppRouters from "./routers/routers";
 function App() {
   return (
     <div className="App">
-      <BrowserRouter>
-        <AppRouters />
-      </BrowserRouter>
+      <Outlet />
     </div>
   );
 }

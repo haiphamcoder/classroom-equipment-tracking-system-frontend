@@ -1,8 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { users } from "../data/mockData";
 
+export type LoginParams = {
+  username: string;
+  password: string;
+};
 type UserContextType = {
-  login: () => void;
+  login: (data: LoginParams) => void;
   logout: () => void;
   isLogin: () => boolean;
   token: string | null;
@@ -25,7 +30,19 @@ export const UserProvider = ({ children }: Props) => {
     setIsReady(true);
   }, []);
 
-  const login = () => {
+  const login = (data: LoginParams) => {
+    console.log(data);
+
+    const account = users.find(
+      (user) =>
+        user.username === data.username && user.password === data.password
+    );
+
+    console.log(account);
+    if (!account) {
+      alert("Invalid username or password");
+      return;
+    }
     const newToken = "token";
     localStorage.setItem("token", newToken);
     setToken(newToken);
