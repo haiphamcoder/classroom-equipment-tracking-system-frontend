@@ -34,7 +34,7 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
 
       const parsedUser = JSON.parse(user);
 
-      await axios.post("/staff/change-password", {
+      await axios.post("/api/staff/change-password", {
         staffId: parsedUser.id,
         oldPassword,
         newPassword,

@@ -21,26 +21,28 @@ export type Staff = {
   name: string;
   email: string;
   phone: string;
-  buildingName: string;
+  buildingId: {
+    buildingName: string;
+  };
 };
 
-const User = () => {
+const  Staff = () => {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [filteredStaff, setFilteredStaff] = useState<Staff[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(""); 
   const [selectedStaff, setSelectedStaff] = useState<Staff>();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
 
-
+  
   const fetchData = async () => {
     try {
       const response = await axios.get("/api/staff/list");
-      console.log('Staff data:', response.data);
+      // console.log('Staff data:', response.data);
       setStaff(response.data);
-      setFilteredStaff(response.data);
+      setFilteredStaff(response.data); 
     } catch (error) {
-      console.error("Error fetching staff data:", error);
+      // console.error("Error fetching staff data:", error);
     }
   };
 
@@ -63,7 +65,7 @@ const User = () => {
     setDialogOpen(false);
   };
 
-
+  
   const handleUpdate = async (updatedStaff: Staff) => {
     try {
       await axios.post("/api/staff/update", updatedStaff);
@@ -130,56 +132,52 @@ const User = () => {
             margin="normal"
           />
           <div className="listTitle"></div>
-          {localStorage.getItem("user") && JSON.parse(localStorage.getItem("user")!).admin ? (
             <TableContainer component={Paper} className="table">
-              <Table sx={{ minWidth: 650 }} aria-label="staff table">
-                {/* Table Head */}
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Staff ID</TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Phone</TableCell>
-                    <TableCell>Building</TableCell>
-                    <TableCell>Actions</TableCell>
+            <Table sx={{ minWidth: 650 }} aria-label="staff table">
+              {/* Table Head */}
+              <TableHead>
+                <TableRow>
+                  <TableCell>Staff ID</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Phone</TableCell>
+                  <TableCell>Building</TableCell> 
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              
+              {/* Table Body */}
+              <TableBody>
+                {filteredStaff.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{item.id}</TableCell>
+                    <TableCell>{item.name}</TableCell>
+                    <TableCell>{item.email}</TableCell>
+                    <TableCell>{item.phone}</TableCell>
+                    <TableCell>
+                      {item.buildingId?.buildingName}
+                    </TableCell> 
+                    <TableCell>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => openUpdateForm(item)}
+                      >
+                        Update
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => handleDelete(item.id)}
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
                   </TableRow>
-                </TableHead>
-
-                {/* Table Body */}
-                <TableBody>
-                  {filteredStaff.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{item.id}</TableCell>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell>{item.email}</TableCell>
-                      <TableCell>{item.phone}</TableCell>
-                      <TableCell>
-                        {item.buildingName}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={() => openUpdateForm(item)}
-                        >
-                          Update
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="error"
-                          onClick={() => handleDelete(item.id)}
-                        >
-                          Delete
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          ) : (
-            <div>Day la code profile</div>
-          )}
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </div>
         <UpdateStaffForm
           open={updateDialogOpen}
@@ -192,4 +190,4 @@ const User = () => {
   );
 };
 
-export default User;
+export default Staff;
