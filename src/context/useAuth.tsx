@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Alert } from "@mui/material";
-
+import { getbaseurl } from "../util/BaseUrl";
 export type LoginParams = {
   username: string;
   password: string;
@@ -18,12 +18,12 @@ type Props = { children: React.ReactNode };
 const UserContext = createContext<UserContextType>({} as UserContextType);
 
 export const UserProvider = ({ children }: Props) => {
-  const getBaseUrl = () => {
-    if (import.meta.env.DEV) {
-      return '/api' // Uses Vite proxy in development
-    }
-    return import.meta.env.VITE_API_BACKEND_URL // Uses direct URL in production
-  }
+  // const getBaseUrl = () => {
+  //   if (import.meta.env.DEV) {
+  //     return '/api' // Uses Vite proxy in development
+  //   }
+  //   return import.meta.env.VITE_API_BACKEND_URL // Uses direct URL in production
+  // }
   const [isReady, setIsReady] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
