@@ -25,11 +25,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import SearchIcon from '@mui/icons-material/Search';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import Input from '@mui/joy/Input';
 import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
-import { TextField } from '@mui/material';
 import UpdateDevicesMenu from './UpdateDeviceMenu';
 
 function labelDisplayedRows({
@@ -222,15 +221,33 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           pr: { xs: 1, sm: 1 },
           borderTopLeftRadius: 'var(--unstable_actionRadius)',
           borderTopRightRadius: 'var(--unstable_actionRadius)',
-          backgroundColor: '#dde7ee'
+          backgroundColor: '#dde7ee',
+          borderBottom: '1px solid #ddd'
         },
         numSelected > 0 && {
-          bgcolor: 'lightgray',
+          backgroundColor: '#dde7ee',
+          display: 'flex',
+          alignItems: 'center',
+          py: 1,
+          pl: { sm: 2 },
+          pr: { xs: 1, sm: 1 },
+          borderTopLeftRadius: 'var(--unstable_actionRadius)',
+          borderTopRightRadius: 'var(--unstable_actionRadius)',
+          borderBottom: '1px solid #ddd'
+
         },
       ]}
     >
       {numSelected > 0 ? (
-        <Typography sx={{ flex: '1 1 100%' }} component="div">
+        <Typography
+          sx={{ flex: '1 1 100%' }}
+          component="div"
+          level="body-lg"
+          fontFamily={"Inter"}
+          fontWeight={600}
+          fontSize='1rem'
+          lineHeight='1.5'
+        >
           {numSelected} selected
         </Typography>
       ) : (
@@ -241,25 +258,45 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           component="div"
           fontFamily={"Inter"}
           fontWeight={600}
+          fontSize='1rem'
+          lineHeight='1.5'
         >
-          Devices
+          {`${statusCounts.AVAILABLE} Available, 
+        ${statusCounts.UNAVAILABLE} Unavailable, 
+        ${statusCounts.BORROWED} Borrowed, 
+        ${statusCounts.DAMAGED} Damaged, 
+        ${statusCounts.NORMAL} Normal, 
+        ${statusCounts.LOST} Lost`}
         </Typography>
       )}
       {numSelected > 0 ? (
-        <Tooltip title="Xoa">
+        <Tooltip title="Delete All">
           <IconButton size="sm" color="danger" variant="solid">
             <DeleteIcon />
           </IconButton>
         </Tooltip>
       ) : (
-        <Tooltip title="Filter list">
-          <IconButton size="sm" variant="outlined" color="neutral">
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
+        <IconButton size="sm">
+        </IconButton>
       )}
-    </Box>
+    </Box >
   );
+}
+const statusCounts: any = {
+  AVAILABLE: 0,
+  UNAVAILABLE: 0,
+  BORROWED: 0,
+  DAMAGED: 0,
+  NORMAL: 0,
+  LOST: 0,
+};
+function calculate() {
+  list_response.forEach((item: any) => {
+    if (statusCounts[item.status] !== undefined) {
+      statusCounts[item.status] += 1;
+    }
+  });
+  return statusCounts;
 }
 
 export var list_response: any = [];
@@ -312,6 +349,7 @@ export default function TableSortAndSelection() {
       setFilterDevice(mapped_response);
       total_rows = mapped_response.length;
       list_response = mapped_response;
+
     } catch (error) {
       console.error("Error fetching ticket data:", error);
     }
@@ -325,6 +363,7 @@ export default function TableSortAndSelection() {
 
     // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
+
   }, []);
 
   const handleDelete = async (ids: number[]) => {
@@ -356,7 +395,11 @@ export default function TableSortAndSelection() {
     const term = e.target.value;
     setSearchTerm(term);
     const filtered = device.filter((item) =>
-      item.name.toLowerCase().includes(term.toLowerCase())
+      item.name.toLowerCase().includes(term.toLowerCase()) ||
+      item.roomName.toLowerCase().includes(term.toLowerCase()) ||
+      item.buildingName.toLowerCase().includes(term.toLowerCase()) ||
+      item.status.toLowerCase().includes(term.toLowerCase()) ||
+      item.quantity.toString().toLowerCase().includes(term.toLowerCase())
     );
     setFilterDevice(filtered);
   };
@@ -435,22 +478,19 @@ export default function TableSortAndSelection() {
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
   return (
     <main className='text'>
-      <TextField
+      <header className='DeviceHeade'
+        style={{ width: 500, marginTop: '30px', marginLeft: '50px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '40px', backgroundColor: 'transparent' }}
+      >Devices</header>
+      <Input
         placeholder='Search'
-        variant="outlined"
+        variant='outlined'
         value={searchTerm}
         onChange={handleSearch}
-        margin="normal"
-        style={{ width: 500, marginLeft: '50px', borderRadius: '20px', alignItems: 'start' }}
-      // InputProps={{
-      //   startAdornment: (
-      //     <span style={{ paddingLeft: '10px' }}><SearchIcon /></span>
-      //   ),
-      // }}
+        style={{ width: 500, top: 20, marginLeft: '50px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px', border: '1px solid #ccc', backgroundColor: 'transparent' }}
       />
 
       <Sheet variant="outlined"
-        sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '10px', top: { xs: '10%', md: '10px' }, left: '50px', backgroundColor: 'whitesmoke' }
+        sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '10px', top: { xs: '10%', md: '50px' }, left: '50px', backgroundColor: 'whitesmoke' }
         }
       >
         <EnhancedTableToolbar numSelected={selected.length} />

@@ -3,6 +3,12 @@ import Popup from "reactjs-popup";
 import { Box, TextField, Button, MenuItem } from "@mui/material";
 import { UpdateDevice } from "../data/mockData";
 import { list_response } from "./DeviceTable";
+import Textarea from '@mui/joy/Textarea';
+import Select from '@mui/joy/Select';
+import Option from '@mui/joy/Option';
+import FormLabel from '@mui/joy/FormLabel';
+
+
 interface UpdateDeviceFormProps {
   open: boolean;
   onClose: () => void;
@@ -36,10 +42,23 @@ const UpdateDeviceForm = ({
   }, [deviceData]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name: string; value: string } }
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  };
+
+
+  const handleChangeQuantity = (event: any) => {
+    const { name, value } = event.target;
+
+    // Ensure the value is a number and doesn't exceed 50 characters
+    if (/^\d*$/.test(value) && value <= 50) {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSave = async () => {
@@ -67,45 +86,33 @@ const UpdateDeviceForm = ({
         autoComplete="off"
       >
         <div className="header" style={{ fontFamily: 'Inter, serif', fontWeight: '500', fontSize: '20px', borderBottom: '1px solid #ddd' }}>Update Device</div>
-        <TextField
-          fullWidth
-          name="name"
-          select
-          label="Device Name"
+        <FormLabel htmlFor="Devices" sx={{}}>Devices</FormLabel>
+        <Select
           value={formData.name}
-          onChange={handleChange}
-          SelectProps={{
-            MenuProps: {
-              PaperProps: {
-                style: {
-                  maxHeight: 48 * 4.5,
-                  width: '20ch',
-                  boxShadow: 'none',
-                  outline: '1px solid #D3D3D3'
-                }
-              }
-            }
+          onChange={(_event, newValue) => handleChange({ target: { name: 'name', value: newValue || '' } })}
+          sx={{
+            width: '100%',
+            fontFamily: 'Inter, serif',
+            fontWeight: '450',
+            fontSize: '14px',
+            '& .MuiSelect-select': {
+              border: '1px solid #D3D3D3',
+              boxShadow: 'none',
+            },
           }}
-          InputProps={{
-            style: { fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }
-          }}
-          InputLabelProps={{
-            style: { fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }
-          }}
+          placeholder="Device Name"
         >
           {list_response.map((device: any) => (
-            <MenuItem key={device.name} value={device.name} sx={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }}>
+            <Option key={device.name} value={device.name} sx={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }}>
               {device.name}
-            </MenuItem>
+            </Option>
           ))}
-        </TextField>
-        <TextField
-          fullWidth
+        </Select>
+        <FormLabel htmlFor="quantity" sx={{}}>Quantity</FormLabel>
+        <Textarea
           name="quantity"
-          label="Quantity"
           value={formData.quantity}
-          onChange={handleChange}
-          type="number"
+          onChange={handleChangeQuantity}
           sx={{
             "& input[type=number]": {
               MozAppearance: "textfield", // Remove spin buttons in Firefox
@@ -115,15 +122,12 @@ const UpdateDeviceForm = ({
               WebkitAppearance: "none", // Remove spin buttons in Chrome, Edge, and Safari
               margin: 0,
             },
+            fontFamily: 'Inter, serif',
+            fontWeight: '450',
+            fontSize: '14px',
           }}
-          InputProps={{
-            style: { fontFamily: 'Inter, serif', fontWeight: '500', fontSize: '14px' }
-          }}
-          InputLabelProps={{
-            style: { fontFamily: 'Inter, serif', fontWeight: '500', fontSize: '14px' }
-          }}
-
         />
+        <FormLabel htmlFor="Status" sx={{}}>Status</FormLabel>
         <TextField
           fullWidth
           name="status"
@@ -157,7 +161,7 @@ const UpdateDeviceForm = ({
             </MenuItem>
           ))}
         </TextField>
-        <Box sx={{ display: "flex", alignItems: 'center', gap: 3, justifyContent: "flex-end" }}>
+        <Box sx={{ display: "flex", alignItems: 'center', gap: 3, justifyContent: "flex-end", }}>
           <Button onClick={handleSave} variant="outlined" sx={{
             fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '12px', color: 'black', borderColor: '#0b6bcb', backgroundColor: '#0b6bcb', textTransform: 'capitalize',
             '&:hover': {
