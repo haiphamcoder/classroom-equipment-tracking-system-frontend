@@ -10,21 +10,27 @@ import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import IconButton from '@mui/joy/IconButton';
 import Link from '@mui/joy/Link';
+import EditIcon from '@mui/icons-material/Edit';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import Tooltip from '@mui/joy/Tooltip';
 import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
+import DoneIcon from '@mui/icons-material/Done';
+import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
+import Brightness1Icon from '@mui/icons-material/Brightness1';
+import BrokenImageIcon from '@mui/icons-material/BrokenImage';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import ReportIcon from '@mui/icons-material/Help';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import SearchIcon from '@mui/icons-material/Search';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
-import { Button, TextField } from '@mui/material';
+import { TextField } from '@mui/material';
 import UpdateDevicesMenu from './UpdateDeviceMenu';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 function labelDisplayedRows({
   from,
@@ -125,61 +131,7 @@ const headCells: readonly HeadCell[] = [
     label: 'Action',
   },
 ];
-const options = [
-  'Edit',
-  'Delete',
-];
 
-const ITEM_HEIGHT = 48;
-
-function LongMenu() {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  return (
-    <div>
-      <IconButton
-        aria-label="more"
-        id="long-button"
-        aria-controls={open ? 'long-menu' : undefined}
-        aria-expanded={open ? 'true' : undefined}
-        aria-haspopup="true"
-        onClick={handleClick}
-      >
-        <MoreVertIcon />
-      </IconButton>
-      <Menu
-        id="long-menu"
-        MenuListProps={{
-          'aria-labelledby': 'long-button',
-        }}
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        slotProps={{
-          paper: {
-            style: {
-              maxHeight: ITEM_HEIGHT * 4.5,
-              width: '20ch',
-            },
-          },
-        }}
-      >
-        {options.map((option) => (
-          <MenuItem key={option} selected={option === 'Pyxis'} onClick={handleClose}>
-            {option}
-          </MenuItem>
-        ))}
-      </Menu>
-    </div>
-  );
-}
 function EnhancedTableHead(props: EnhancedTableProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
     props;
@@ -309,6 +261,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     </Box>
   );
 }
+
+export var list_response: any = [];
 export var total_rows = 0;
 export default function TableSortAndSelection() {
   const [device, setDevices] = useState<Device[]>([]);
@@ -323,13 +277,24 @@ export default function TableSortAndSelection() {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-  const handleClickMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
+
+  const getStatusInfo = (status: any) => {
+    switch (status) {
+      case 'AVAILABLE':
+        return { icon: <DoneIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#d4f8c4' };
+      case 'UNAVAILABLE':
+        return { icon: <DoNotDisturbIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#F87071' };
+      case 'BORROWED':
+        return { icon: <HourglassEmptyIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#f8e084' };
+      case 'DAMAGED':
+        return { icon: <BrokenImageIcon sx={{ fontSize: 10 }} />, bgColor: '#e5a6a6' };
+      case 'NORMAL':
+        return { icon: <Brightness1Icon sx={{ fontSize: 10 }} />, bgColor: '#f0f0f0' };
+      case 'LOST':
+        return { icon: <ReportIcon sx={{ fontSize: 10 }} />, bgColor: '#e1c2f9' };
+      default:
+        return { icon: null, bgColor: '#f9f9f9' }; // Default
+    }
   };
 
   const fetchData = async () => {
@@ -345,7 +310,8 @@ export default function TableSortAndSelection() {
       }));
       setDevices(mapped_response);
       setFilterDevice(mapped_response);
-      total_rows = mapped_response.lenght;
+      total_rows = mapped_response.length;
+      list_response = mapped_response;
     } catch (error) {
       console.error("Error fetching ticket data:", error);
     }
@@ -361,22 +327,25 @@ export default function TableSortAndSelection() {
     return () => clearInterval(intervalId);
   }, []);
 
+  const handleDelete = async (ids: number[]) => {
+    console.log("Deleting items with IDs:", ids); // Log the IDs to be deleted
 
-  const handleDelete = async (id: number) => {
-    console.log("Deleting item with ID:", id); // Check if this is logged when clicking Delete button
-    if (!window.confirm("Are you sure you want to delete this device?")) {
+    if (!window.confirm("Are you sure you want to delete these devices?")) {
       return;
     }
 
     try {
-      // Send a POST request to delete the item
-      await axios.post(`/api/equipment/delete/${id}`);
-      setDevices(device.filter((item) => item.id.toString() !== id.toString())); // Remove item from the state
-      setFilterDevice(filteredDevice.filter((item) => item.id !== id));
-      console.log(`Device with ID ${id} deleted successfully.`);
+      // Send a POST request to delete the items
+      await axios.post("/api/equipment/delete", { ids }); // Sending the array of IDs as the payload
+      // Update state to remove the deleted items
+      setDevices(device.filter((item) => !ids.at(item.id)));
+      setFilterDevice(filteredDevice.filter((item) => !ids.at(item.id)));
+
+      console.log(`Devices with IDs ${ids.join(", ")} deleted successfully.`);
     } catch (error) {
-      console.error("Error deleting device:", error);
-      alert("An error occurred while deleting the device. Please try again.");
+      console.error("Error deleting devices:", error);
+      console.log("Try to delete: ", ids);
+      alert("An error occurred while deleting the devices. Please try again.");
     }
   };
 
@@ -401,8 +370,8 @@ export default function TableSortAndSelection() {
       } else {
         alert("Failed to update device.");
       }
-      setDevices(device.map((item) => (item.id.toString() === updatedDevice.id ? response.data : item)));
-      setFilterDevice(filteredDevice.map((item) => (item.id.toString() === updatedDevice.id ? response.data : item)));
+      setDevices(device.map((item) => (item.id === updatedDevice.id ? response.data : item)));
+      setFilterDevice(filteredDevice.map((item) => (item.id === updatedDevice.id ? response.data : item)));
       setUpdateDialogOpen(false);
     } catch (error) {
       console.error("Error updating device:", error);
@@ -429,11 +398,11 @@ export default function TableSortAndSelection() {
     }
     setSelected([]);
   };
-  const handleClick = (_event: React.MouseEvent<unknown>, name: number) => {
-    const selectedIndex = selected.indexOf(name.toString());
+  const handleClick = (_event: React.MouseEvent<unknown>, name: string) => {
+    const selectedIndex = selected.indexOf(name);
     let newSelected: readonly string[] = [];
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name.toString());
+      newSelected = newSelected.concat(selected, name);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -465,242 +434,212 @@ export default function TableSortAndSelection() {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
   return (
-    <Sheet variant="outlined"
-      sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '10px', top: { xs: '10%', md: '10px' }, left: '50px', backgroundColor: 'whitesmoke' }
-      }
-    >
-      <EnhancedTableToolbar numSelected={selected.length} />
+    <main className='text'>
       <TextField
-        label="Search by name"
+        placeholder='Search'
         variant="outlined"
         value={searchTerm}
         onChange={handleSearch}
-        fullWidth
         margin="normal"
+        style={{ width: 500, marginLeft: '50px', borderRadius: '20px', alignItems: 'start' }}
+      // InputProps={{
+      //   startAdornment: (
+      //     <span style={{ paddingLeft: '10px' }}><SearchIcon /></span>
+      //   ),
+      // }}
       />
-      <Table
-        aria-labelledby="tableTitle"
-        hoverRow
-        sx={{
-          '--TableCell-headBackground': 'transparent',
-          '--TableCell-selectedBackground': (theme) =>
-            theme.vars.palette.success.softBg,
-          '& thead th:nth-child(1)': {
-            width: '20px',
-          },
-          '& thead th:nth-child(2)': {
-            width: 'flex',
-          },
-          '& tr > *:nth-child(n+3)': { textAlign: 'start' },
-        }}
-      >
-        <EnhancedTableHead
-          numSelected={selected.length}
-          order={order}
-          orderBy={orderBy}
-          onSelectAllClick={handleSelectAllClick}
-          onRequestSort={handleRequestSort}
-          rowCount={rows.length}
-        />
-        <tbody>
-          {[...rows]
-            .sort(getComparator(order, orderBy))
-            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-            .map((row, index) => {
-              const isItemSelected = selected.includes(row.id);
-              const labelId = `enhanced-table-checkbox-${index}`;
 
-              return (
-                <tr
-                  onClick={(event) => handleClick(event, row.id)}
-                  role="checkbox"
-                  aria-checked={isItemSelected}
-                  tabIndex={-1}
-                  key={row.id}
-                  // selected={isItemSelected}
-                  style={
-                    isItemSelected
-                      ? ({
-                        backgroundColor: '#dde7ee',
-                      } as React.CSSProperties)
-                      : {}
-                  }
-                >
-                  <th scope="row">
-                    <Checkbox
-                      checked={isItemSelected}
-                      slotProps={{
-                        input: {
-                          'aria-labelledby': labelId,
-                        },
-                      }}
-                      sx={{ verticalAlign: 'top' }}
-                    />
-                  </th>
-                  <th id={labelId} scope="row" style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>
-                    {row.id}
-                  </th>
-                  <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.name}</td>
-                  <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.roomName}</td>
-                  <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.buildingName}</td>
-                  <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.status}</td>
-                  <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.quantity}</td>
-                  <td>
-                    {/*<Button
-                      variant="contained"
-                      color="error"
-                      onClick={(_e) => {
-                        setDialogOpen(true)
-                        openUpdateForm(row);
-                      }}
-                    >
-                      Edit
-                    </Button>
-                    <UpdateDevicesMenu
-                      open={updateDialogOpen}
-                      onClose={() => setUpdateDialogOpen(false)}
-                      onSubmit={handleUpdate}
-                      deviceData={selectedDevice} />
-                    <Button
-                      variant="contained"
-                      color="error"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(row.id);
-                      }}
-                    >
-                      Delete
-                    </Button>*/}
-                    <div>
-                      <IconButton
-                        aria-label="more"
-                        id="long-button"
-                        aria-controls={open ? 'long-menu' : undefined}
-                        aria-expanded={open ? 'true' : undefined}
-                        aria-haspopup="true"
-                        onClick={handleClickMenu}
-                      >
-                        <MoreVertIcon />
-                      </IconButton>
-                      <Menu
-                        id="long-menu"
-                        MenuListProps={{
-                          'aria-labelledby': 'long-button',
-                        }}
-                        anchorEl={anchorEl}
-                        open={open}
-                        onClose={handleClose}
+      <Sheet variant="outlined"
+        sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '10px', top: { xs: '10%', md: '10px' }, left: '50px', backgroundColor: 'whitesmoke' }
+        }
+      >
+        <EnhancedTableToolbar numSelected={selected.length} />
+        <Table
+          aria-labelledby="tableTitle"
+          hoverRow
+          sx={{
+            '--TableCell-headBackground': 'transparent',
+            '--TableCell-selectedBackground': (theme) =>
+              theme.vars.palette.success.softBg,
+            '& thead th:nth-child(1)': {
+              width: '20px',
+            },
+            '& thead th:nth-child(2)': {
+              width: 'flex',
+            },
+            '& tr > *:nth-child(n+3)': { textAlign: 'start' },
+          }}
+        >
+          <EnhancedTableHead
+            numSelected={selected.length}
+            order={order}
+            orderBy={orderBy}
+            onSelectAllClick={handleSelectAllClick}
+            onRequestSort={handleRequestSort}
+            rowCount={rows.length}
+          />
+          <tbody>
+            {[...rows]
+              .sort(getComparator(order, orderBy))
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((row, index) => {
+                const isItemSelected = selected.includes(row.id as any);
+                const labelId = `enhanced-table-checkbox-${index}`;
+                const { icon, bgColor } = getStatusInfo(row.status);
+                return (
+                  <tr
+                    onClick={(event) => handleClick(event, row.id as any)}
+                    role="checkbox"
+                    aria-checked={isItemSelected}
+                    tabIndex={-1}
+                    key={row.id}
+                    // selected={isItemSelected}
+                    style={
+                      isItemSelected
+                        ? ({
+                          backgroundColor: '#dde7ee',
+                        } as React.CSSProperties)
+                        : {}
+                    }
+                  >
+                    <th scope="row">
+                      <Checkbox
+                        checked={isItemSelected}
                         slotProps={{
-                          paper: {
-                            style: {
-                              maxHeight: ITEM_HEIGHT * 4.5,
-                              width: '10ch',
-                              boxShadow: 'none',
-                              outline: '1px solid #d3d3d3',
-                              borderRadius: '5px',
-                            },
+                          input: {
+                            'aria-labelledby': labelId,
                           },
                         }}
-                      >
-                        <MenuItem onClick={(_e) => {
+                        sx={{ verticalAlign: 'top' }}
+                      />
+                    </th>
+                    <th id={labelId} scope="row" style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>
+                      {row.id}
+                    </th>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.name}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.roomName}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.buildingName}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>
+                      <div style={{
+                        display: 'inline',
+                        alignItems: 'center',
+                        padding: '5px 10px',
+                        border: '1px solid #ccc',
+                        borderRadius: '20px',
+                        backgroundColor: bgColor,
+                        borderColor: 'transparent'
+                      }}>
+                        {icon && <span style={{ marginRight: '5px' }}>{icon}</span>}
+                        {row.status}
+                      </div>
+                    </td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.quantity}</td>
+                    <td>
+                      <IconButton
+                        variant="soft"
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setDialogOpen(true)
                           openUpdateForm(row);
                         }}
-                          style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px', borderBottom: '1px solid #d3d3d3' }}
-                        >
-                          Edit
-                        </MenuItem>
-                        <MenuItem onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(row.id);
-                        }}
-                          style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px', color: 'red' }}
-                        >
-                          Delete
-                        </MenuItem>
-                      </Menu>
+                        size='sm'
+                        style={{ borderRadius: '16px' }}
+                      >
+                        <EditIcon style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '20px', alignItems: 'start' }}
+                        />
+                      </IconButton>
                       <UpdateDevicesMenu
                         open={updateDialogOpen}
                         onClose={() => setUpdateDialogOpen(false)}
                         onSubmit={handleUpdate}
                         deviceData={selectedDevice} />
-
-                    </div>
-
-                  </td>
-                </tr>
-              );
-            })}
-          {emptyRows > 0 && (
-            <tr
-              style={
-                {
-                  height: `calc(${emptyRows} * 40px)`,
-                  '--TableRow-hoverBackground': 'transparent',
-                } as React.CSSProperties
-              }
-            >
-              <td colSpan={7} aria-hidden />
-            </tr>
-          )}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colSpan={8}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 3,
-                  justifyContent: 'flex-end',
-                }}
+                      <IconButton
+                        variant="soft"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete([row.id]);
+                        }}
+                        size='sm'
+                        style={{ borderRadius: '16px' }}
+                      >
+                        <RemoveCircleIcon style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '20px', alignItems: 'start' }}
+                        />
+                      </IconButton>
+                    </td>
+                  </tr>
+                );
+              })}
+            {emptyRows > 0 && (
+              <tr
+                style={
+                  {
+                    height: `calc(${emptyRows} * 40px)`,
+                    '--TableRow-hoverBackground': 'transparent',
+                  } as React.CSSProperties
+                }
               >
-                <FormControl orientation="horizontal" size="sm">
-                  <FormLabel>Rows per page:</FormLabel>
-                  <Select onChange={handleChangeRowsPerPage} value={rowsPerPage}>
-                    <Option value={5}>5</Option>
-                    <Option value={10}>10</Option>
-                    <Option value={25}>25</Option>
-                  </Select>
-                </FormControl>
-                <Typography sx={{ textAlign: 'center', minWidth: 80 }}>
-                  {labelDisplayedRows({
-                    from: rows.length === 0 ? 0 : page * rowsPerPage + 1,
-                    to: getLabelDisplayedRowsTo(),
-                    count: rows.length === -1 ? -1 : rows.length,
-                  })}
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <IconButton
-                    size="sm"
-                    color="neutral"
-                    variant="outlined"
-                    disabled={page === 0}
-                    onClick={() => handleChangePage(page - 1)}
-                    sx={{ bgcolor: 'background.surface' }}
-                  >
-                    <KeyboardArrowLeftIcon />
-                  </IconButton>
-                  <IconButton
-                    size="sm"
-                    color="neutral"
-                    variant="outlined"
-                    disabled={
-                      rows.length !== -1
-                        ? page >= Math.ceil(rows.length / rowsPerPage) - 1
-                        : false
-                    }
-                    onClick={() => handleChangePage(page + 1)}
-                    sx={{ bgcolor: 'background.surface' }}
-                  >
-                    <KeyboardArrowRightIcon />
-                  </IconButton>
+                <td colSpan={7} aria-hidden />
+              </tr>
+            )}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={8}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 3,
+                    justifyContent: 'flex-end',
+                  }}
+                >
+                  <FormControl orientation="horizontal" size="sm">
+                    <FormLabel>Rows per page:</FormLabel>
+                    <Select onChange={handleChangeRowsPerPage} value={rowsPerPage}>
+                      <Option value={5}>5</Option>
+                      <Option value={10}>10</Option>
+                      <Option value={25}>25</Option>
+                    </Select>
+                  </FormControl>
+                  <Typography sx={{ textAlign: 'center', minWidth: 80 }}>
+                    {labelDisplayedRows({
+                      from: rows.length === 0 ? 0 : page * rowsPerPage + 1,
+                      to: getLabelDisplayedRowsTo(),
+                      count: rows.length === -1 ? -1 : rows.length,
+                    })}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <IconButton
+                      size="sm"
+                      color="neutral"
+                      variant="outlined"
+                      disabled={page === 0}
+                      onClick={() => handleChangePage(page - 1)}
+                      sx={{ bgcolor: 'background.surface' }}
+                    >
+                      <KeyboardArrowLeftIcon />
+                    </IconButton>
+                    <IconButton
+                      size="sm"
+                      color="neutral"
+                      variant="outlined"
+                      disabled={
+                        rows.length !== -1
+                          ? page >= Math.ceil(rows.length / rowsPerPage) - 1
+                          : false
+                      }
+                      onClick={() => handleChangePage(page + 1)}
+                      sx={{ bgcolor: 'background.surface' }}
+                    >
+                      <KeyboardArrowRightIcon />
+                    </IconButton>
+                  </Box>
                 </Box>
-              </Box>
-            </td>
-          </tr>
-        </tfoot>
-      </Table>
-    </Sheet >
+              </td>
+            </tr>
+          </tfoot>
+        </Table>
+      </Sheet >
+    </main>
   );
 }
