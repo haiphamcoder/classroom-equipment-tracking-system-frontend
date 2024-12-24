@@ -334,7 +334,11 @@ export default function TableSortAndSelection() {
     const term = e.target.value;
     setSearchTerm(term);
     const filtered = ticket.filter((item) =>
-      item.borrowerName.toLowerCase().includes(term.toLowerCase())
+      item.borrowerName.toLowerCase().includes(term.toLowerCase()) ||
+      item.staffName.toLowerCase().includes(term.toLowerCase()) ||
+      item.status.toLowerCase().includes(term.toLowerCase()) ||
+      item.borrowTime.toLowerCase().includes(term.toLowerCase()) ||
+      item.returnDeadline.toLowerCase().includes(term.toLowerCase())
     );
     setFilterTicket(filtered);
   };
@@ -488,12 +492,12 @@ export default function TableSortAndSelection() {
             .sort(getComparator(order, orderBy))
             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
             .map((row, index) => {
-              const isItemSelected = selected.includes(row.borrowerName);
+              const isItemSelected = selected.includes(row.id.toString());
               const labelId = `enhanced-table-checkbox-${index}`;
 
               return (
                 <tr
-                  onClick={(event) => handleClick(event, row.borrowerName)}
+                  onClick={(event) => handleClick(event, row.id.toString())}
                   role="checkbox"
                   aria-checked={isItemSelected}
                   tabIndex={-1}

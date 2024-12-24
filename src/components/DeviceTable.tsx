@@ -22,6 +22,9 @@ import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
 import { Button, TextField } from '@mui/material';
 import UpdateDevicesMenu from './UpdateDeviceMenu';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 function labelDisplayedRows({
   from,
@@ -122,6 +125,61 @@ const headCells: readonly HeadCell[] = [
     label: 'Action',
   },
 ];
+const options = [
+  'Edit',
+  'Delete',
+];
+
+const ITEM_HEIGHT = 48;
+
+function LongMenu() {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <div>
+      <IconButton
+        aria-label="more"
+        id="long-button"
+        aria-controls={open ? 'long-menu' : undefined}
+        aria-expanded={open ? 'true' : undefined}
+        aria-haspopup="true"
+        onClick={handleClick}
+      >
+        <MoreVertIcon />
+      </IconButton>
+      <Menu
+        id="long-menu"
+        MenuListProps={{
+          'aria-labelledby': 'long-button',
+        }}
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        slotProps={{
+          paper: {
+            style: {
+              maxHeight: ITEM_HEIGHT * 4.5,
+              width: '20ch',
+            },
+          },
+        }}
+      >
+        {options.map((option) => (
+          <MenuItem key={option} selected={option === 'Pyxis'} onClick={handleClose}>
+            {option}
+          </MenuItem>
+        ))}
+      </Menu>
+    </div>
+  );
+}
 function EnhancedTableHead(props: EnhancedTableProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
     props;
@@ -140,7 +198,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             onChange={onSelectAllClick}
             slotProps={{
               input: {
-                'aria-label': 'select all tickets',
+                'aria-label': 'select all devices',
               },
             }}
             sx={{ verticalAlign: 'sub' }}
@@ -151,6 +209,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
           return (
             <th
               key={headCell.id}
+              align={headCell.id ? 'right' : 'left'}
               aria-sort={
                 active
                   ? ({ asc: 'ascending', desc: 'descending' } as const)[order]
@@ -164,19 +223,10 @@ function EnhancedTableHead(props: EnhancedTableProps) {
                 textColor={active ? 'primary.plainColor' : undefined}
                 component="button"
                 onClick={createSortHandler(headCell.id)}
-                startDecorator={
-                  headCell.numeric ? (
-                    <ArrowDownwardIcon
-                      sx={[active ? { opacity: 1 } : { opacity: 0 }]}
-                    />
-                  ) : null
-                }
                 endDecorator={
-                  !headCell.numeric ? (
-                    <ArrowDownwardIcon
-                      sx={[active ? { opacity: 1 } : { opacity: 0 }]}
-                    />
-                  ) : null
+                  <ArrowDownwardIcon
+                    sx={[active ? { opacity: 1 } : { opacity: 0 }]}
+                  />
                 }
                 sx={{
                   fontWeight: 'lg',
@@ -187,6 +237,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
                   },
 
                   '&:hover': { '& svg': { opacity: 1 } },
+                  '&:focus': { outline: 'none', boxShadow: 'none' },
                 }}
               >
                 {headCell.label}
@@ -219,10 +270,10 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           pr: { xs: 1, sm: 1 },
           borderTopLeftRadius: 'var(--unstable_actionRadius)',
           borderTopRightRadius: 'var(--unstable_actionRadius)',
-          backgroundColor: 'lightgray'
+          backgroundColor: '#dde7ee'
         },
         numSelected > 0 && {
-          bgcolor: 'background.level1',
+          bgcolor: 'lightgray',
         },
       ]}
     >
@@ -236,6 +287,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           sx={{ flex: '1 1 100%' }}
           id="tableTitle"
           component="div"
+          fontFamily={"Inter"}
+          fontWeight={600}
         >
           Devices
         </Typography>
@@ -270,6 +323,14 @@ export default function TableSortAndSelection() {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClickMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   const fetchData = async () => {
     try {
@@ -310,7 +371,7 @@ export default function TableSortAndSelection() {
     try {
       // Send a POST request to delete the item
       await axios.post(`/api/equipment/delete/${id}`);
-      setDevices(device.filter((item) => item.id !== id)); // Remove item from the state
+      setDevices(device.filter((item) => item.id.toString() !== id.toString())); // Remove item from the state
       setFilterDevice(filteredDevice.filter((item) => item.id !== id));
       console.log(`Device with ID ${id} deleted successfully.`);
     } catch (error) {
@@ -340,8 +401,8 @@ export default function TableSortAndSelection() {
       } else {
         alert("Failed to update device.");
       }
-      setDevices(device.map((item) => (item.id === updatedDevice.id ? response.data : item)));
-      setFilterDevice(filteredDevice.map((item) => (item.id === updatedDevice.id ? response.data : item)));
+      setDevices(device.map((item) => (item.id.toString() === updatedDevice.id ? response.data : item)));
+      setFilterDevice(filteredDevice.map((item) => (item.id.toString() === updatedDevice.id ? response.data : item)));
       setUpdateDialogOpen(false);
     } catch (error) {
       console.error("Error updating device:", error);
@@ -368,11 +429,11 @@ export default function TableSortAndSelection() {
     }
     setSelected([]);
   };
-  const handleClick = (_event: React.MouseEvent<unknown>, name: string) => {
-    const selectedIndex = selected.indexOf(name);
+  const handleClick = (_event: React.MouseEvent<unknown>, name: number) => {
+    const selectedIndex = selected.indexOf(name.toString());
     let newSelected: readonly string[] = [];
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
+      newSelected = newSelected.concat(selected, name.toString());
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -405,7 +466,7 @@ export default function TableSortAndSelection() {
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
   return (
     <Sheet variant="outlined"
-      sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '16px', top: { xs: '10%', md: '10px' }, left: '50px', backgroundColor: 'whitesmoke' }
+      sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '10px', top: { xs: '10%', md: '10px' }, left: '50px', backgroundColor: 'whitesmoke' }
       }
     >
       <EnhancedTableToolbar numSelected={selected.length} />
@@ -425,12 +486,12 @@ export default function TableSortAndSelection() {
           '--TableCell-selectedBackground': (theme) =>
             theme.vars.palette.success.softBg,
           '& thead th:nth-child(1)': {
-            width: '30px',
+            width: '20px',
           },
           '& thead th:nth-child(2)': {
             width: 'flex',
           },
-          '& tr > *:nth-child(n+3)': { textAlign: 'center' },
+          '& tr > *:nth-child(n+3)': { textAlign: 'start' },
         }}
       >
         <EnhancedTableHead
@@ -446,12 +507,12 @@ export default function TableSortAndSelection() {
             .sort(getComparator(order, orderBy))
             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
             .map((row, index) => {
-              const isItemSelected = selected.includes(row.name);
+              const isItemSelected = selected.includes(row.id);
               const labelId = `enhanced-table-checkbox-${index}`;
 
               return (
                 <tr
-                  onClick={(event) => handleClick(event, row.name)}
+                  onClick={(event) => handleClick(event, row.id)}
                   role="checkbox"
                   aria-checked={isItemSelected}
                   tabIndex={-1}
@@ -460,10 +521,7 @@ export default function TableSortAndSelection() {
                   style={
                     isItemSelected
                       ? ({
-                        '--TableCell-dataBackground':
-                          'var(--TableCell-selectedBackground)',
-                        '--TableCell-headBackground':
-                          'var(--TableCell-selectedBackground)',
+                        backgroundColor: '#dde7ee',
                       } as React.CSSProperties)
                       : {}
                   }
@@ -479,16 +537,16 @@ export default function TableSortAndSelection() {
                       sx={{ verticalAlign: 'top' }}
                     />
                   </th>
-                  <th id={labelId} scope="row">
+                  <th id={labelId} scope="row" style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>
                     {row.id}
                   </th>
-                  <td>{row.name}</td>
-                  <td>{row.roomName}</td>
-                  <td>{row.buildingName}</td>
-                  <td>{row.status}</td>
-                  <td>{row.quantity}</td>
+                  <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.name}</td>
+                  <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.roomName}</td>
+                  <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.buildingName}</td>
+                  <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.status}</td>
+                  <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.quantity}</td>
                   <td>
-                    <Button
+                    {/*<Button
                       variant="contained"
                       color="error"
                       onClick={(_e) => {
@@ -512,7 +570,62 @@ export default function TableSortAndSelection() {
                       }}
                     >
                       Delete
-                    </Button>
+                    </Button>*/}
+                    <div>
+                      <IconButton
+                        aria-label="more"
+                        id="long-button"
+                        aria-controls={open ? 'long-menu' : undefined}
+                        aria-expanded={open ? 'true' : undefined}
+                        aria-haspopup="true"
+                        onClick={handleClickMenu}
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                      <Menu
+                        id="long-menu"
+                        MenuListProps={{
+                          'aria-labelledby': 'long-button',
+                        }}
+                        anchorEl={anchorEl}
+                        open={open}
+                        onClose={handleClose}
+                        slotProps={{
+                          paper: {
+                            style: {
+                              maxHeight: ITEM_HEIGHT * 4.5,
+                              width: '10ch',
+                              boxShadow: 'none',
+                              outline: '1px solid #d3d3d3',
+                              borderRadius: '5px',
+                            },
+                          },
+                        }}
+                      >
+                        <MenuItem onClick={(_e) => {
+                          setDialogOpen(true)
+                          openUpdateForm(row);
+                        }}
+                          style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px', borderBottom: '1px solid #d3d3d3' }}
+                        >
+                          Edit
+                        </MenuItem>
+                        <MenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(row.id);
+                        }}
+                          style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px', color: 'red' }}
+                        >
+                          Delete
+                        </MenuItem>
+                      </Menu>
+                      <UpdateDevicesMenu
+                        open={updateDialogOpen}
+                        onClose={() => setUpdateDialogOpen(false)}
+                        onSubmit={handleUpdate}
+                        deviceData={selectedDevice} />
+
+                    </div>
 
                   </td>
                 </tr>
@@ -538,7 +651,7 @@ export default function TableSortAndSelection() {
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 5,
+                  gap: 3,
                   justifyContent: 'flex-end',
                 }}
               >
