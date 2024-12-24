@@ -1,7 +1,6 @@
 import {
   Avatar,
   Box,
-  Container,
   Paper,
   TextField,
   Typography,
@@ -11,7 +10,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../context/useAuth";
-
+import CustomAlert from "../components/CustomAlert";
 
 export const ChangePassword = () => {
   const [formData, setFormData] = useState({
@@ -21,6 +20,12 @@ export const ChangePassword = () => {
     confirmNewPassword: "",
   });
   const { logout } = useAuth();
+
+  const [alert, setAlert] = useState<{
+    type: string;
+    title: string;
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -45,35 +50,55 @@ export const ChangePassword = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const showAlert = (type: string, title: string, message: string) => {
+    setAlert({ type, title, message });
+    setTimeout(() => {
+      setAlert(null);
+    }, 2000);
+  };
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     const { oldPassword, newPassword, confirmNewPassword, staffId } = formData;
-
+  
     if (!oldPassword || !newPassword || !confirmNewPassword) {
-      alert("All fields are required.");
+      showAlert("error", "Validation Error", "Vui lòng điền đủ các thông tin.");
       return;
     }
-
+  
     if (newPassword !== confirmNewPassword) {
-      alert("New passwords do not match.");
+      showAlert("error", "Validation Error", "Mật khẩu mới không khớp. Vui lòng thử lại.");
       return;
     }
-
-    console.log("Form submitted", { staffId, oldPassword, newPassword });
+  
     try {
       await axios.post("/api/staff/change-password", {
         staffId,
         oldPassword,
         newPassword,
       });
-      logout()
+  
+      showAlert("success", "Success", "Thay đổi mật khẩu thành công.");
+  
+      setTimeout(() => {
+        logout();
+      }, 2000);
     } catch (error) {
-      console.error("Error updating staff:", error);
+      console.error("Error updating password:", error);
+      showAlert("error", "Error", "Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại.");
     }
   };
+  
 
   return (
-    <Container maxWidth="xs">
+    <div>
+      {alert && (
+        <CustomAlert
+          type={alert.type as "success" | "info" | "warning" | "error"}
+          title={alert.type === "success" ? "Thành công" : "Lỗi"}
+          message={alert.message}
+        />
+      )}
       <Paper elevation={10} sx={{ marginTop: 8, padding: 3 }}>
         <Box
           sx={{
@@ -126,6 +151,6 @@ export const ChangePassword = () => {
           </Button>
         </Box>
       </Paper>
-    </Container>
+    </div>
   );
 };

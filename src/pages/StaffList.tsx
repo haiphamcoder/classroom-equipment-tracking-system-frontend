@@ -54,7 +54,7 @@ const Staff = () => {
       showAlert(
         "error",
         "Fetch Error",
-        "Could not fetch staff data. Please try again later."
+        "Không thể lấy dữ liệu nhân viên. Vui lòng thử lại."
       );
     }
   };
@@ -85,13 +85,13 @@ const Staff = () => {
       showAlert(
         "success",
         "Update Success",
-        "Staff information has been updated successfully."
+        "Cập nhật thông tin nhân viên thành công."
       );
     } catch (error) {
       showAlert(
         "error",
         "Update Error",
-        "An error occurred while updating the staff. Please try again."
+        "Cập nhật thông tin nhân viên thất bại. Vui lòng thử lại."
       );
     }
   };
@@ -106,13 +106,13 @@ const Staff = () => {
       showAlert(
         "success",
         "Delete Success",
-        "Staff member has been deleted successfully."
+        "Xoá nhân viên thành công."
       );
     } catch (error) {
       showAlert(
         "error",
         "Delete Error",
-        "An error occurred while deleting the staff. Please try again."
+        "Có lỗi xảy ra khi xóa nhân viên. Vui lòng thử lại."
       );
     }
   };
@@ -125,13 +125,13 @@ const Staff = () => {
       showAlert(
         "success",
         "Add Success",
-        "New staff member has been added successfully."
+        "Nhân viên mới đã được thêm thành công."
       );
     } catch (error) {
       showAlert(
         "error",
         "Add Error",
-        "An error occurred while adding the staff. Please try again."
+        "Có lỗi xảy ra khi thêm nhân viên. Vui lòng thử lại."
       );
     }
   };
@@ -141,7 +141,6 @@ const Staff = () => {
     setUpdateDialogOpen(true);
   };
 
-  // Function to show alert and automatically hide after 2 seconds
   const showAlert = (type: string, title: string, message: string) => {
     setAlert({ type, title, message });
     setTimeout(() => {
@@ -154,7 +153,7 @@ const Staff = () => {
       {alert && (
         <CustomAlert
           type={alert.type as "success" | "info" | "warning" | "error"}
-          title={alert.title}
+          title={alert.type === "success" ? "Thành công" : "Lỗi"}
           message={alert.message}
         />
       )}
