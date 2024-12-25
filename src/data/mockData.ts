@@ -69,3 +69,12 @@ export const users: User[] = [
 	{ id: 3, username: 'test', password: 'test' }
 ];
 export const Staff: User[] = [];
+
+export interface TicketExport {
+	borrowerName: string;
+	status: 'BORROWED' | 'RETURNED' | 'OVERDUE' | 'CANCELED',
+	startDate: string;
+	endDate: string;
+	sortBy: 'BORROWER';
+	sortDirection: string;
+}

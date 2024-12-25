@@ -18,8 +18,10 @@ import Option from '@mui/joy/Option';
 import DoneIcon from '@mui/icons-material/Done';
 import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
 import Brightness1Icon from '@mui/icons-material/Brightness1';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import BrokenImageIcon from '@mui/icons-material/BrokenImage';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import Button from '@mui/joy/Button';
 import ReportIcon from '@mui/icons-material/Help';
 import DeleteIcon from '@mui/icons-material/Delete';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
@@ -30,7 +32,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
 import UpdateDevicesMenu from './UpdateDeviceMenu';
-import { Search } from '@mui/icons-material';
+import { downloadExcelFile } from './DeviceExport';
+import NewDevicesMenu from "./NewDevicesMenu";
 
 function labelDisplayedRows({
   from,
@@ -456,18 +459,26 @@ export default function TableSortAndSelection() {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
   return (
-    <main className='text'>
-      <header className='DeviceHeade'
+    <main className='device_main'>
+      <header className='DeviceHeader'
         style={{ width: 500, marginTop: '30px', marginLeft: '50px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '40px', backgroundColor: 'transparent' }}
       >Devices</header>
-      <Input
-        startDecorator={<SearchIcon />}
-        placeholder='Search'
-        variant='outlined'
-        value={searchTerm}
-        onChange={handleSearch}
-        style={{ width: 800, top: 20, marginLeft: '50px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px', border: '1px solid #ccc', backgroundColor: 'transparent' }}
-      />
+      <Box className='search_and_export' sx={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+        <Input
+          startDecorator={<SearchIcon />}
+          placeholder='Search'
+          variant='outlined'
+          value={searchTerm}
+          onChange={handleSearch}
+          style={{ width: 800, top: 20, marginLeft: '50px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px', border: '1px solid #ccc', backgroundColor: 'transparent' }}
+        />
+        <Box sx={{ display: 'flex', gap: 2, marginLeft: '415px' }}>
+          <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={<NewDevicesMenu />}
+          >New Device</Button>
+          <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={downloadExcelFile}
+          >Export</Button>
+        </Box>
+      </Box>
       <Sheet variant="outlined"
         sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '10px', top: { xs: '10%', md: '50px' }, left: '50px', backgroundColor: 'whitesmoke' }
         }

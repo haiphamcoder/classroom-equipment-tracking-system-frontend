@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import "../styles/TicketsTable.scss";
-import { Ticket, Items, UpdateTicket } from '../data/mockData';
+import { Ticket, Items, UpdateTicket, TicketExport } from '../data/mockData';
 import Box from '@mui/joy/Box';
 import Table from '@mui/joy/Table';
 import Typography from '@mui/joy/Typography';
@@ -15,7 +15,8 @@ import Tooltip from '@mui/joy/Tooltip';
 import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
 import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import Button from '@mui/joy/Button';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
@@ -30,7 +31,7 @@ import Input from '@mui/joy/Input';
 import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
 import UpdateTicketForm from './UpdateTicketMenu';
-
+import TicketExportPopup from './TicketExport';
 
 function labelDisplayedRows({
   from,
@@ -276,6 +277,8 @@ export default function TableSortAndSelection() {
   const [selectedTicket, setSelectedTicket] = useState<UpdateTicket | null>(null);
   const [_dialogOpen, setDialogOpen] = useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+
   const fetchData = async () => {
     try {
       const response = await axios.get("/api/order/list", {
@@ -469,6 +472,7 @@ export default function TableSortAndSelection() {
       ? rows.length
       : Math.min(rows.length, (page + 1) * rowsPerPage);
   };
+
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
@@ -478,14 +482,19 @@ export default function TableSortAndSelection() {
       <header className='TicketHeader'
         style={{ width: 500, marginTop: '30px', marginLeft: '50px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '40px', backgroundColor: 'transparent' }}
       >Tickets</header>
-      <Input
-        startDecorator={<SearchIcon />}
-        placeholder='Search'
-        variant='outlined'
-        value={searchTerm}
-        onChange={handleSearch}
-        style={{ width: 800, top: 20, marginLeft: '50px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px', border: '1px solid #ccc', backgroundColor: 'transparent' }}
-      />
+      <Box className='search_and_export' sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        <Input
+          startDecorator={<SearchIcon />}
+          placeholder='Search'
+          variant='outlined'
+          value={searchTerm}
+          onChange={handleSearch}
+          style={{ width: 800, top: 20, marginLeft: '50px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px', border: '1px solid #ccc', backgroundColor: 'transparent' }}
+        />
+        <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, marginLeft: '570px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowPopup(true); console.log("click") }}
+        >Export</Button>
+        <TicketExportPopup open={showPopup} onClose={() => setShowPopup(false)} />
+      </Box>
       <Sheet variant="outlined"
         sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '10px', top: { xs: '10%', md: '50px' }, left: '50px', backgroundColor: 'whitesmoke' }
         }
