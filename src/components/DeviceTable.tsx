@@ -453,7 +453,7 @@ export default function TableSortAndSelection() {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
   return (
-    <main className='device_main' style={{ overflowX: 'auto', maxWidth: '100%', marginLeft: '250px' }}>
+    <main className='device_main' style={{ marginLeft: '250px' }}>
       <header className='DeviceHeader'
         style={{ width: 500, marginTop: '30px', marginLeft: '50px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '40px', backgroundColor: 'transparent' }}
       >Devices</header>
