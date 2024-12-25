@@ -99,9 +99,9 @@ const NewDevicesMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
         modal
         nested
       >
-        <Box className="modal" component="form" sx={{ display: "flex", flexDirection: "column", gap: 3, p: 2, borderRadius: '10px', backgroundColor: '#fbfcfe', padding: 0 }}
+        <Box className="modal" component="form" sx={{ display: "flex", flexDirection: "column", gap: 3, p: 2, borderRadius: '10px', backgroundColor: '#fbfcfe', marginLeft: '100px' }}
           noValidate autoComplete="off">
-          <div className="header"> Add devices </div>
+          <div className="header"> Add tickets </div>
           <div className="content">
             <TextField
               fullWidth
