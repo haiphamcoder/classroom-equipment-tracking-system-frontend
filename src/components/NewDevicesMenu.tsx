@@ -1,12 +1,10 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import Popup from 'reactjs-popup';
-import ClickableText from "./ClickableText";
 import "../styles/NewDevicesMenu.scss";
 import { TextField, Box, MenuItem, Snackbar } from "@mui/material";
 import axios from "axios";
 
-function NewDevicesMenu() {
+const NewDevicesMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const [formData, setFormData] = useState({
     name: "",
     roomId: 0,
@@ -95,13 +93,15 @@ function NewDevicesMenu() {
   return (
     <>
       <Popup
+        open={open}
+        onClose={onClose}
         ref={ref}
-        trigger={<ClickableText text="Add devices" onClick={() => { }} />}
         modal
         nested
       >
-        <Box className="modal" component="form" sx={{ display: "flex", flexWrap: "wrap" }} noValidate autoComplete="off">
-          <div className="header"> Add devices </div>
+        <Box className="modal" component="form" sx={{ display: "flex", flexDirection: "column", gap: 3, p: 2, borderRadius: '10px', backgroundColor: '#fbfcfe', marginLeft: '100px' }}
+          noValidate autoComplete="off">
+          <div className="header"> Add tickets </div>
           <div className="content">
             <TextField
               fullWidth

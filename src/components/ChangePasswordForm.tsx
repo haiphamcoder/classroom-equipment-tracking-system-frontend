@@ -7,6 +7,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Alert from "@mui/material/Alert";
 import axios from "axios";
+import CustomAlert from "../components/CustomAlert"; // Import CustomAlert
 
 interface ChangePasswordFormProps {
   open: boolean;
@@ -22,9 +23,16 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
+  // State for CustomAlert
+  const [alert, setAlert] = useState<{
+    type: string;
+    title: string;
+    message: string;
+  } | null>(null);
+
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
-      setError("New passwords do not match.");
+      setError("Mật khẩu mới không khớp. Vui lòng thử lại.");
       return;
     }
 
@@ -34,64 +42,85 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
 
       const parsedUser = JSON.parse(user);
 
-      await axios.post("/staff/change-password", {
+      await axios.post("/api/staff/change-password", {
         staffId: parsedUser.id,
         oldPassword,
         newPassword,
       });
 
-      alert("Password changed successfully!");
+      // Show success alert
+      showAlert("success", "Password Changed", "Thay đổi mật khẩu thành công.");
       onClose();
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || err.message || "An error occurred"
+      // Show error alert
+      showAlert(
+        "error",
+        "Change Failed",
+        err.response?.data?.message || err.message || "Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại."
       );
     }
   };
 
+  // Function to show CustomAlert
+  const showAlert = (type: string, title: string, message: string) => {
+    setAlert({ type, title, message });
+    setTimeout(() => {
+      setAlert(null);
+    }, 2000); // Auto-hide after 2 seconds
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Change Password</DialogTitle>
-      <DialogContent>
-        {error && <Alert severity="error">{error}</Alert>}
-        <TextField
-          margin="normal"
-          fullWidth
-          type="password"
-          label="Old Password"
-          value={oldPassword}
-          onChange={(e) => setOldPassword(e.target.value)}
+    <div>
+      {alert && (
+        <CustomAlert
+          type={alert.type as "success" | "info" | "warning" | "error"}
+          title={alert.type === "success" ? "Thành công" : "Lỗi"}
+          message={alert.message}
         />
-        <TextField
-          margin="normal"
-          fullWidth
-          type="password"
-          label="New Password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
-        <TextField
-          margin="normal"
-          fullWidth
-          type="password"
-          label="Confirm Password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="secondary" variant="outlined">
-          Exit
-        </Button>
-        <Button
-          onClick={handleChangePassword}
-          color="primary"
-          variant="contained"
-        >
-          Save
-        </Button>
-      </DialogActions>
-    </Dialog>
+      )}
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+        <DialogTitle>Change Password</DialogTitle>
+        <DialogContent>
+          {error && <Alert severity="error">{error}</Alert>}
+          <TextField
+            margin="normal"
+            fullWidth
+            type="password"
+            label="Old Password"
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+          />
+          <TextField
+            margin="normal"
+            fullWidth
+            type="password"
+            label="New Password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <TextField
+            margin="normal"
+            fullWidth
+            type="password"
+            label="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose} color="secondary" variant="outlined">
+            Exit
+          </Button>
+          <Button
+            onClick={handleChangePassword}
+            color="primary"
+            variant="contained"
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
   );
 };
 

@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "test": "jtest",
     "lint": "eslint .",
-    "preview": "vite preview"  
+    "preview": "vite preview"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.0.2",
@@ -18,6 +18,8 @@
     "@mui/icons-material": "^6.1.6",
     "@mui/joy": "^5.0.0-beta.48",
     "@mui/material": "^6.2.1",
+    "@mui/x-charts": "^7.23.2",
+    "@mui/x-charts-pro": "^7.23.2",
     "@mui/x-data-grid": "^7.22.3",
     "@mui/x-date-pickers": "^7.23.2",
     "@toolpad/core": "^0.10.0",

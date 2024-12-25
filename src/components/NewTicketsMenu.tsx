@@ -1,7 +1,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import Popup from "reactjs-popup";
-import ClickableText from "./ClickableText";
+// import ClickableText from "./ClickableText";
 import "../styles/NewDevicesMenu.scss";
 import {
   TextField,
@@ -14,7 +14,9 @@ import {
 import { Remove, Add } from "@mui/icons-material";
 import axios from "axios";
 import { NewTicketItems, NewTicket } from "../data/mockData";
-function NewTicketsMenu() {
+// import { list_response } from "./DeviceTable";
+
+const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [equipmentOptions, setEquipmentOptions] = useState<number[]>([]); // State for equipment IDs
   const [formData, setFormData] = useState<NewTicket>({
@@ -89,8 +91,12 @@ function NewTicketsMenu() {
     }
   };
 
+  const currentDateTime = new Date().toISOString();
   const ref = useRef<any>(null);
-  const exit = () => ref.current.close();
+  const exit = () => {
+    setFormData({ borrowerId: 0, staffId: 0, borrowTime: currentDateTime, returnDeadline: currentDateTime, items: [] })
+    ref.current.close();
+  }
 
   const handleSave = async () => {
 
@@ -104,6 +110,8 @@ function NewTicketsMenu() {
 
       const response = await axios.post("/api/order/create", formattedData);
       console.log("Ticket created successfully:", response.data);
+      setFormData({ borrowerId: 0, staffId: 0, borrowTime: currentDateTime, returnDeadline: currentDateTime, items: [] })
+      ref.current.close();
     } catch (error) {
       console.error("Error creating ticket:", error);
     }
@@ -113,12 +121,14 @@ function NewTicketsMenu() {
   };
   return (
     <Popup
+      open={open}
+      onClose={onClose}
       ref={ref}
-      trigger={<ClickableText text="Add tickets" onClick={() => { }} />}
+      // trigger={<ClickableText text="Add tickets" onClick={() => { }} />}
       modal
       nested
     >
-      <Box className="modal" component="form" sx={{ display: "flex", flexWrap: "wrap" }} noValidate autoComplete="off">
+      <Box className="modal" component="form" sx={{ display: "flex", flexWrap: "wrap", marginLeft: '250px' }} noValidate autoComplete="off">
         <div className="header">Add devices</div>
         <div className="content">
           {/* Borrower ID */}
@@ -175,7 +185,13 @@ function NewTicketsMenu() {
           />
 
           {/* Items List */}
-          <List>
+          <List sx={{
+            borderRadius: '12px',
+            maxHeight: '200px',
+            overflowY: 'auto',
+            border: '1px solid #ddd',
+            padding: '10px',
+          }}>
             {formData.items.map((item, index) => (
               <ListItem key={index} disableGutters>
                 <Autocomplete

@@ -2,6 +2,10 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Paper,
   Table,
   TableBody,
@@ -12,35 +16,45 @@ import {
   TextField,
 } from "@mui/material";
 import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
 import RegisterForm from "../components/RegisterForm";
 import UpdateStaffForm from "../components/UpdateStaffForm";
+import CustomAlert from "../components/CustomAlert";
 
 export type Staff = {
   id: string | "";
   name: string;
   email: string;
   phone: string;
-  buildingName: string;
+  buildingId: {
+    buildingName: string;
+  };
+  admin?: boolean;
 };
 
-const User = () => {
+const Staff = () => {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [filteredStaff, setFilteredStaff] = useState<Staff[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStaff, setSelectedStaff] = useState<Staff>();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
-
+  const [alert, setAlert] = useState<{
+    type: string;
+    title: string;
+    message: string;
+  } | null>(null);
 
   const fetchData = async () => {
     try {
       const response = await axios.get("/api/staff/list");
-      console.log('Staff data:', response.data);
       setStaff(response.data);
       setFilteredStaff(response.data);
     } catch (error) {
-      console.error("Error fetching staff data:", error);
+      showAlert(
+        "error",
+        "Fetch Error",
+        "Không thể lấy dữ liệu nhân viên. Vui lòng thử lại."
+      );
     }
   };
 
@@ -48,7 +62,6 @@ const User = () => {
     fetchData();
   }, []);
 
-  // Search handler
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
     setSearchTerm(term);
@@ -63,77 +76,126 @@ const User = () => {
     setDialogOpen(false);
   };
 
-
   const handleUpdate = async (updatedStaff: Staff) => {
     try {
       await axios.post("/api/staff/update", updatedStaff);
-      fetchData(); // Fetch updated data
-      setUpdateDialogOpen(false); // Close the update dialog
+      fetchData();
+      setUpdateDialogOpen(false);
+      showAlert(
+        "success",
+        "Update Success",
+        "Cập nhật thông tin nhân viên thành công."
+      );
     } catch (error) {
-      console.error("Error updating staff:", error);
+      showAlert(
+        "error",
+        "Update Error",
+        "Cập nhật thông tin nhân viên thất bại. Vui lòng thử lại."
+      );
     }
   };
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | undefined>();
 
-  // Handle deleting staff
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this staff member?")) {
-      return;
-    }
+  const handleDelete = async (id: string | undefined) => {
     try {
       await axios.post(`/api/staff/delete/${id}`);
       setStaff(staff.filter((item) => item.id !== id));
       setFilteredStaff(filteredStaff.filter((item) => item.id !== id));
+      showAlert(
+        "success",
+        "Delete Success",
+        "Xoá nhân viên thành công."
+      );
     } catch (error) {
-      console.error("Error deleting staff:", error);
+      showAlert(
+        "error",
+        "Delete Error",
+        "Có lỗi xảy ra khi xóa nhân viên. Vui lòng thử lại."
+      );
     }
   };
 
-  // Handle adding new staff
   const handleAddStaff = async (newStaff: Staff) => {
     try {
       const response = await axios.post("/api/staff/create", newStaff);
       setStaff([...staff, response.data]);
       setFilteredStaff([...filteredStaff, response.data]);
+      showAlert(
+        "success",
+        "Add Success",
+        "Nhân viên mới đã được thêm thành công."
+      );
     } catch (error) {
-      console.error("Error creating new staff:", error);
+      showAlert(
+        "error",
+        "Add Error",
+        "Có lỗi xảy ra khi thêm nhân viên. Vui lòng thử lại."
+      );
     }
   };
 
-  // Open update form
   const openUpdateForm = (staff: Staff) => {
     setSelectedStaff(staff);
     setUpdateDialogOpen(true);
   };
 
+  const showAlert = (type: string, title: string, message: string) => {
+    setAlert({ type, title, message });
+    setTimeout(() => {
+      setAlert(null);
+    }, 2000);
+  };
+
   return (
-    <div className="dashboard">
-      <Sidebar />
-      <div className="homeContainer">
-        <Navbar />
-        <div className="widgets"></div>
-        <div className="listContainer">
-          <Button variant="contained" onClick={() => setDialogOpen(true)}>
-            Add new staff
-          </Button>
-          <RegisterForm
-            open={dialogOpen}
-            onClose={handleClose}
-            onSubmit={handleAddStaff}
-          />
-          {/* Search bar */}
-          <TextField
-            label="Search by name"
-            variant="outlined"
-            value={searchTerm}
-            onChange={handleSearch}
-            fullWidth
-            margin="normal"
-          />
-          <div className="listTitle"></div>
-          {localStorage.getItem("user") && JSON.parse(localStorage.getItem("user")!).admin ? (
+    <div>
+      {alert && (
+        <CustomAlert
+          type={alert.type as "success" | "info" | "warning" | "error"}
+          title={alert.type === "success" ? "Thành công" : "Lỗi"}
+          message={alert.message}
+        />
+      )}
+      <div className="dashboard">
+        <Sidebar />
+        <div className="homeContainer">
+          <div className="widgets"></div>
+          <div className="listContainer">
+            <Button variant="contained" onClick={() => setDialogOpen(true)}>
+              Add new staff
+            </Button>
+            <RegisterForm
+              open={dialogOpen}
+              onClose={handleClose}
+              onSubmit={handleAddStaff}
+            />
+            <TextField
+              label="Search by name"
+              variant="outlined"
+              value={searchTerm}
+              onChange={handleSearch}
+              fullWidth
+              margin="normal"
+            />
+            <Dialog open={openDeleteDialog}>
+              <DialogTitle>Xoa nhan vien</DialogTitle>
+              <DialogContent>
+                Ban co chac chan muon xoa nhan vien nay khong?
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    handleDelete(deleteId);
+                    setOpenDeleteDialog(false);
+                  }}
+                >
+                  Xoa
+                </Button>
+                <Button onClick={() => setOpenDeleteDialog(false)}>Huy</Button>
+              </DialogActions>
+            </Dialog>
             <TableContainer component={Paper} className="table">
               <Table sx={{ minWidth: 650 }} aria-label="staff table">
-                {/* Table Head */}
                 <TableHead>
                   <TableRow>
                     <TableCell>Staff ID</TableCell>
@@ -144,52 +206,55 @@ const User = () => {
                     <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
-
-                {/* Table Body */}
                 <TableBody>
-                  {filteredStaff.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{item.id}</TableCell>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell>{item.email}</TableCell>
-                      <TableCell>{item.phone}</TableCell>
-                      <TableCell>
-                        {item.buildingName}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={() => openUpdateForm(item)}
-                        >
-                          Update
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="error"
-                          onClick={() => handleDelete(item.id)}
-                        >
-                          Delete
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {filteredStaff.map((item) => {
+                    if (item.admin === true) {
+                      return null;
+                    } else {
+                      return (
+                        <TableRow key={item.id}>
+                          <TableCell>{item.id}</TableCell>
+                          <TableCell>{item.name}</TableCell>
+                          <TableCell>{item.email}</TableCell>
+                          <TableCell>{item.phone}</TableCell>
+                          <TableCell>{item.buildingId?.buildingName}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => openUpdateForm(item)}
+                            >
+                              Update
+                            </Button>
+                            <Button
+                              variant="contained"
+                              color="error"
+                              onClick={() => {
+                                setOpenDeleteDialog(true);
+                                setDeleteId(item.id);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    }
+                  })}
                 </TableBody>
               </Table>
             </TableContainer>
-          ) : (
-            <div>Day la code profile</div>
-          )}
+          </div>
+          <UpdateStaffForm
+            open={updateDialogOpen}
+            onClose={() => setUpdateDialogOpen(false)}
+            onSubmit={handleUpdate}
+            staffData={selectedStaff!}
+          />
         </div>
-        <UpdateStaffForm
-          open={updateDialogOpen}
-          onClose={() => setUpdateDialogOpen(false)}
-          onSubmit={handleUpdate}
-          staffData={selectedStaff!}
-        />
       </div>
     </div>
   );
 };
 
-export default User;
+export default Staff;

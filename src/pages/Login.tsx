@@ -15,17 +15,20 @@ import { LoginParams, useAuth } from "../context/useAuth";
 export const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, _] = useState(""); // State to store error messages
+  const [error, setError] = useState(""); 
   const navigate = useNavigate();
   const { login } = useAuth();
-  const handleSubmit = async (event: any) => {
-    event.preventDefault(); // Prevent form from reloading the page
-    login({
-      username,
-      password,
-    } as LoginParams);
-    navigate("/dashboard");
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault(); 
+    try {
+      await login({ username, password } as LoginParams);
+      navigate("/dashboard");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Invalid username or password.");
+    }
   };
+
   return (
     <Container maxWidth="xs">
       <Paper elevation={10} sx={{ marginTop: 8, padding: 2 }}>
