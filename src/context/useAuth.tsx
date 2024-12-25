@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Alert } from "@mui/material";
-import { getbaseurl } from "../util/BaseUrl";
+import CustomAlert from "../components/CustomAlert";
+
 export type LoginParams = {
   username: string;
   password: string;
 };
+
 type UserContextType = {
   login: (data: LoginParams) => void;
   logout: () => void;
@@ -26,12 +27,11 @@ export const UserProvider = ({ children }: Props) => {
   }
   const [isReady, setIsReady] = useState(false);
   const [token, setToken] = useState<string | null>(null);
-  const [alertOpen, setAlertOpen] = useState<boolean>(false);
+  const [alert, setAlert] = useState<{ type: string; message: string } | null>(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    // const savedToken = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
       setToken("token");
@@ -41,22 +41,33 @@ export const UserProvider = ({ children }: Props) => {
 
   const login = async (data: LoginParams) => {
     try {
-      // Send login request to the API
-      const baseUrl = getBaseUrl();
-      const response = await axios.post(`${baseUrl}/staff/login`, data);
+      //       // Send login request to the API
+      //       const baseUrl = getBaseUrl();
+      //       const response = await axios.post(`${baseUrl}/staff/login`, data);
+      const response = await axios.post("/api/staff/login", data);
       if (response.status === 200) {
-        const userData = response.data; // Entire response data
-        localStorage.setItem("user", JSON.stringify(userData)); // Save data as a JSON string
-        setToken("token"); // Update token in state (if applicable)
-        navigate("/dashboard"); // Redirect to the dashboard
+        const userData = response.data;
+        localStorage.setItem("user", JSON.stringify(userData));
+        setToken("token");
+        setAlert({ type: "success", message: "Đăng nhập thành công!" });
+
+
+        setTimeout(() => {
+          setAlert(null);
+          navigate("/dashboard");
+        }, 2000);
       }
     } catch (err) {
       console.error("Login failed:", err);
+      setAlert({
+        type: "error",
+        message: "Sai tài khoản hoặc mật khẩu, vui lòng thử lại.",
+      });
 
-      setAlertOpen(true);
+
       setTimeout(() => {
-        setAlertOpen(false);
-      }, 1000);
+        setAlert(null);
+      }, 2000);
     }
   };
 
@@ -73,7 +84,13 @@ export const UserProvider = ({ children }: Props) => {
 
   return (
     <>
-      {alertOpen ? <Alert severity="error">Sai mk</Alert> : ""}
+      {alert && (
+        <CustomAlert
+          type={alert.type as "success" | "error"}
+          title={alert.type === "success" ? "Thành công" : "Lỗi"}
+          message={alert.message}
+        />
+      )}
       <UserContext.Provider value={{ isLogin, login, logout, token }}>
         {isReady ? children : null}
       </UserContext.Provider>

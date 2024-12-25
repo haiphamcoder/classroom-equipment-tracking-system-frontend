@@ -32,7 +32,8 @@ const UpdateStaffForm = ({
   ];
 
   const [formData, setFormData] = useState<Staff>(
-    staffData || { id: "", name: "", email: "", phone: "", buildingName: "" }
+    staffData || { id: "", name: "", email: "", phone: "", buildingId: { buildingName: "" } }
+
   );
 
   useEffect(() => {
@@ -49,7 +50,7 @@ const UpdateStaffForm = ({
   };
 
   const handleSave = () => {
-    const { name, phone, buildingName } = formData;
+    const { name, phone, buildingId: { buildingName } } = formData;
     if (!name || !phone || !buildingName) {
       alert("Please fill all fields.");
       return;
@@ -100,7 +101,7 @@ const UpdateStaffForm = ({
           name="buildingName"
           select
           label="Building Name"
-          value={formData.buildingName}
+          value={formData.buildingId?.buildingName || ""}
           onChange={handleChange}
         >
           {building.map((building) => (
