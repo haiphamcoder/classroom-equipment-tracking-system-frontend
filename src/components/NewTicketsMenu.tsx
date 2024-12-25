@@ -14,7 +14,7 @@ import {
 import { Remove, Add } from "@mui/icons-material";
 import axios from "axios";
 import { NewTicketItems, NewTicket } from "../data/mockData";
-import { list_response } from "./DeviceTable";
+// import { list_response } from "./DeviceTable";
 
 const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const [loading, setLoading] = useState(false);
