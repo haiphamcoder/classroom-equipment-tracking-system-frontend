@@ -128,7 +128,7 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
       modal
       nested
     >
-      <Box className="modal" component="form" sx={{ display: "flex", flexWrap: "wrap" }} noValidate autoComplete="off">
+      <Box className="modal" component="form" sx={{ display: "flex", flexWrap: "wrap", marginLeft: '250px' }} noValidate autoComplete="off">
         <div className="header">Add devices</div>
         <div className="content">
           {/* Borrower ID */}
