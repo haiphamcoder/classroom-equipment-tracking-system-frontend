@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -22,6 +23,8 @@ import CustomAlert from "../components/CustomAlert";
 import Sheet from "@mui/joy/Sheet";
 import EditIcon from "@mui/icons-material/Edit";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import { downloadExcelFile } from "../components/StaffExport";
 
 export type Staff = {
   id: string | "";
@@ -105,11 +108,7 @@ const Staff = () => {
       await axios.post(`/api/staff/delete/${id}`);
       setStaff(staff.filter((item) => item.id !== id));
       setFilteredStaff(filteredStaff.filter((item) => item.id !== id));
-      showAlert(
-        "success",
-        "Delete Success",
-        "Xoá nhân viên thành công."
-      );
+      showAlert("success", "Delete Success", "Xoá nhân viên thành công.");
     } catch (error) {
       showAlert(
         "error",
@@ -152,127 +151,139 @@ const Staff = () => {
 
   return (
     <div>
-    {alert && (
-      <CustomAlert
-        type={alert.type as "success" | "info" | "warning" | "error"}
-        title={alert.type === "success" ? "Thành công" : "Lỗi"}
-        message={alert.message}
-      />
-    )}
-    <div className="dashboard">
-      <Sidebar />
-      <div className="homeContainer">
-        <Navbar />
-        <div className="widgets"></div>
-        <main className="listContainer">
-          <header
-            style={{
-              fontSize: "32px",
-              fontWeight: "600",
-              marginBottom: "20px",
-              fontFamily: "Inter, serif",
-            }}
-          >
-            Staff List
-          </header>
-          <Button variant="contained" onClick={() => setDialogOpen(true)}>
-            Add New Staff
-          </Button>
-          <RegisterForm
-            open={dialogOpen}
-            onClose={handleClose}
-            onSubmit={handleAddStaff}
-          />
-          <TextField
-            label="Search by name"
-            variant="outlined"
-            value={searchTerm}
-            onChange={handleSearch}
-            fullWidth
-            margin="normal"
-          />
-          <Sheet
-            variant="outlined"
-            sx={{
-              width: "100%",
-              borderRadius: "10px",
-              marginTop: "20px",
-              backgroundColor: "whitesmoke",
-            }}
-          >
-            <Table aria-labelledby="tableTitle">
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Phone</TableCell>
-                  <TableCell>Building</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredStaff.map((item) => {
-                  if (item.admin) return null;
-                  return (
-                    <TableRow key={item.id}>
-                      <TableCell>{item.id}</TableCell>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell>{item.email}</TableCell>
-                      <TableCell>{item.phone}</TableCell>
-                      <TableCell>{item.buildingId?.buildingName}</TableCell>
-                      <TableCell>
-                        <IconButton
-                          // variant="soft"
-                          onClick={() => openUpdateForm(item)}
-                          size="small"
-                          style={{ borderRadius: "16px", marginRight: "10px" }}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          // variant="soft"
-                          onClick={() => {
-                            setOpenDeleteDialog(true);
-                            setDeleteId(item.id);
-                          }}
-                          size="small"
-                          style={{ borderRadius: "16px" }}
-                        >
-                          <RemoveCircleIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </Sheet>
-          <Dialog open={openDeleteDialog}>
-            <DialogTitle>Delete Staff</DialogTitle>
-            <DialogContent>Are you sure you want to delete this staff?</DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => {
-                  handleDelete(deleteId);
-                  setOpenDeleteDialog(false);
-                }}
-              >
-                Delete
+      {alert && (
+        <CustomAlert
+          type={alert.type as "success" | "info" | "warning" | "error"}
+          title={alert.type === "success" ? "Thành công" : "Lỗi"}
+          message={alert.message}
+        />
+      )}
+      <div className="dashboard">
+        <Sidebar />
+        <div className="homeContainer">
+          <Navbar />
+          <div className="widgets"></div>
+          <main className="listContainer">
+            <header
+              style={{
+                fontSize: "32px",
+                fontWeight: "600",
+                marginBottom: "20px",
+                fontFamily: "Inter, serif",
+              }}
+            >
+              Staff List
+            </header>
+            <Box>
+              <Button variant="contained" onClick={() => setDialogOpen(true)}>
+                Add New Staff
               </Button>
-              <Button onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
-            </DialogActions>
-          </Dialog>
-          <UpdateStaffForm
-            open={updateDialogOpen}
-            onClose={() => setUpdateDialogOpen(false)}
-            onSubmit={handleUpdate}
-            staffData={selectedStaff!}
-          />
-        </main>
+              <Button variant="contained" onClick={() => downloadExcelFile(showAlert)}>
+                Export
+              </Button>
+            </Box>
+            <RegisterForm
+              open={dialogOpen}
+              onClose={handleClose}
+              onSubmit={handleAddStaff}
+            />
+            <TextField
+              label="Search by name"
+              variant="outlined"
+              value={searchTerm}
+              onChange={handleSearch}
+              fullWidth
+              margin="normal"
+            />
+            <Sheet
+              variant="outlined"
+              sx={{
+                width: "100%",
+                borderRadius: "10px",
+                marginTop: "20px",
+                backgroundColor: "whitesmoke",
+              }}
+            >
+              <Table aria-labelledby="tableTitle">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>ID</TableCell>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Phone</TableCell>
+                    <TableCell>Building</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredStaff.map((item) => {
+                    if (item.admin) return null;
+                    return (
+                      <TableRow key={item.id}>
+                        <TableCell>{item.id}</TableCell>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell>{item.email}</TableCell>
+                        <TableCell>{item.phone}</TableCell>
+                        <TableCell>{item.buildingId?.buildingName}</TableCell>
+                        <TableCell>
+                          <IconButton
+                            // variant="soft"
+                            onClick={() => openUpdateForm(item)}
+                            size="small"
+                            style={{
+                              borderRadius: "16px",
+                              marginRight: "10px",
+                            }}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            // variant="soft"
+                            onClick={() => {
+                              setOpenDeleteDialog(true);
+                              setDeleteId(item.id);
+                            }}
+                            size="small"
+                            style={{ borderRadius: "16px" }}
+                          >
+                            <RemoveCircleIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </Sheet>
+            <Dialog open={openDeleteDialog}>
+              <DialogTitle>Delete Staff</DialogTitle>
+              <DialogContent>
+                Are you sure you want to delete this staff?
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    handleDelete(deleteId);
+                    setOpenDeleteDialog(false);
+                  }}
+                >
+                  Delete
+                </Button>
+                <Button onClick={() => setOpenDeleteDialog(false)}>
+                  Cancel
+                </Button>
+              </DialogActions>
+            </Dialog>
+            <UpdateStaffForm
+              open={updateDialogOpen}
+              onClose={() => setUpdateDialogOpen(false)}
+              onSubmit={handleUpdate}
+              staffData={selectedStaff!}
+            />
+          </main>
+        </div>
       </div>
     </div>
-  </div>  
   );
 };
 
