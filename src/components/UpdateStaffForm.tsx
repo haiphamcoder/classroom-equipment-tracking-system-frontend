@@ -1,21 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Popup from "reactjs-popup";
-import { Box, TextField, Button, MenuItem } from "@mui/material";
-import { Staff } from "../pages/StaffList";
+import { Box, TextField, Button, MenuItem, Typography } from "@mui/material";
 
-interface UpdateStaffFormProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (data: Staff) => void;
-  staffData: Staff | undefined;
-}
-
-const UpdateStaffForm = ({
-  open,
-  onClose,
-  onSubmit,
-  staffData,
-}: UpdateStaffFormProps) => {
+const RegisterForm = ({ open, onClose, onSubmit }: any) => {
   const building = [
     { value: "D7", label: "D7" },
     { value: "D9", label: "D9" },
@@ -31,78 +18,109 @@ const UpdateStaffForm = ({
     { value: "C7", label: "C7" },
   ];
 
-  const [formData, setFormData] = useState<Staff>(
-    staffData || { id: "", name: "", email: "", phone: "", buildingId: { buildingName: "" } }
+  const [formData, setFormData] = useState({
+    username: "",
+    fullName: "",
+    phone: "",
+    email: "",
+    buildingName: "",
+  });
 
-  );
-
-  useEffect(() => {
-    if (staffData) {
-      setFormData({ ...staffData });
-    }
-  }, [staffData]);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleChange = (e: any) => {
+    const { id, name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id || name]: value }));
   };
 
   const handleSave = () => {
-    const { name, phone, buildingId: { buildingName } } = formData;
-    if (!name || !phone || !buildingName) {
+    const { username, fullName, phone, email, buildingName } = formData;
+    if (!username || !fullName || !phone || !email || !buildingName) {
       alert("Please fill all fields.");
       return;
     }
+
     onSubmit(formData);
     onClose();
+    setFormData({
+      username: "",
+      fullName: "",
+      phone: "",
+      email: "",
+      buildingName: "",
+    });
   };
-
-  if (!staffData) return null;
 
   return (
     <Popup open={open} modal nested onClose={onClose}>
       <Box
-        className="modal"
         component="form"
-        sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          p: 4,
+          width: 360,
+          borderRadius: 2,
+          boxShadow: 4,
+          bgcolor: "background.paper",
+        }}
         noValidate
         autoComplete="off"
       >
-        <div className="header">Update Staff</div>
+        <Typography variant="h5" align="center" gutterBottom>
+          Add Staff
+        </Typography>
         <TextField
           fullWidth
-          name="name"
-          label="Name"
-          value={formData.name}
+          id="username"
+          label="Username"
+          value={formData.username}
           onChange={handleChange}
+          margin="dense"
+          variant="outlined"
         />
         <TextField
           fullWidth
-          name="phone"
+          id="fullName"
+          label="Full Name"
+          value={formData.fullName}
+          onChange={handleChange}
+          margin="dense"
+          variant="outlined"
+        />
+        <TextField
+          fullWidth
+          id="phone"
           label="Phone"
           value={formData.phone}
-          onChange={handleChange}
-          type="number"
-          sx={{
-            "& input[type=number]": {
-              MozAppearance: "textfield", // Remove spin buttons in Firefox
-            },
-            "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
-              {
-                WebkitAppearance: "none", // Remove spin buttons in Chrome, Edge, and Safari
-                margin: 0,
-              },
+          onChange={(e) => {
+            const value = e.target.value;
+            if (/^\d*$/.test(value)) {
+              handleChange(e);
+            }
           }}
+          margin="dense"
+          variant="outlined"
+          type="text"
+        />
+        <TextField
+          fullWidth
+          id="email"
+          label="Email"
+          value={formData.email}
+          onChange={handleChange}
+          margin="dense"
+          variant="outlined"
+          type="email"
         />
         <TextField
           fullWidth
           name="buildingName"
           select
           label="Building Name"
-          value={formData.buildingId?.buildingName || ""}
+          value={formData.buildingName}
           onChange={handleChange}
+          margin="dense"
+          variant="outlined"
         >
           {building.map((building) => (
             <MenuItem key={building.value} value={building.value}>
@@ -123,4 +141,4 @@ const UpdateStaffForm = ({
   );
 };
 
-export default UpdateStaffForm;
+export default RegisterForm;

@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -14,17 +13,22 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Tooltip,
+  Typography,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import RegisterForm from "../components/RegisterForm";
 import UpdateStaffForm from "../components/UpdateStaffForm";
 import CustomAlert from "../components/CustomAlert";
-import Sheet from "@mui/joy/Sheet";
 import EditIcon from "@mui/icons-material/Edit";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
-import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import { downloadExcelFile } from "../components/StaffExport";
+import axios from "axios";
 
 export type Staff = {
   id: string | "";
@@ -49,6 +53,10 @@ const Staff = () => {
     title: string;
     message: string;
   } | null>(null);
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<keyof Staff>("id");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const fetchData = async () => {
     try {
@@ -100,6 +108,7 @@ const Staff = () => {
       );
     }
   };
+
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<string | undefined>();
 
@@ -149,6 +158,29 @@ const Staff = () => {
     }, 2000);
   };
 
+  const handleRequestSort = (
+    _event: React.MouseEvent<unknown>,
+    property: keyof Staff
+  ) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
+  const handleChangePage = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (
+    _event: React.ChangeEvent<{ value: unknown }>
+  ) => {
+    setRowsPerPage(parseInt(_event.target.value as string, 10));
+    setPage(0);
+  };
+
+  const emptyRows =
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - filteredStaff.length) : 0;
+
   return (
     <div>
       {alert && (
@@ -161,7 +193,6 @@ const Staff = () => {
       <div className="dashboard">
         <Sidebar />
         <div className="homeContainer">
-          <Navbar />
           <div className="widgets"></div>
           <main className="listContainer">
             <header
@@ -174,11 +205,14 @@ const Staff = () => {
             >
               Staff List
             </header>
-            <Box>
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
               <Button variant="contained" onClick={() => setDialogOpen(true)}>
                 Add New Staff
               </Button>
-              <Button variant="contained" onClick={() => downloadExcelFile(showAlert)}>
+              <Button
+                variant="contained"
+                onClick={() => downloadExcelFile(showAlert)}
+              >
                 Export
               </Button>
             </Box>
@@ -195,18 +229,10 @@ const Staff = () => {
               fullWidth
               margin="normal"
             />
-            <Sheet
-              variant="outlined"
-              sx={{
-                width: "100%",
-                borderRadius: "10px",
-                marginTop: "20px",
-                backgroundColor: "whitesmoke",
-              }}
-            >
-              <Table aria-labelledby="tableTitle">
+            <Box sx={{ width: "100%", overflow: "auto", backgroundColor: "#f5f5f5", borderRadius: "10px", padding: "20px" }}>
+              <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow style={{ backgroundColor: "#e0e7ff" }}>
                     <TableCell>ID</TableCell>
                     <TableCell>Name</TableCell>
                     <TableCell>Email</TableCell>
@@ -216,49 +242,91 @@ const Staff = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredStaff.map((item) => {
-                    if (item.admin) return null;
-                    return (
-                      <TableRow key={item.id}>
+                  {filteredStaff
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((item) => (
+                      <TableRow
+                        hover
+                        key={item.id}
+                      >
                         <TableCell>{item.id}</TableCell>
                         <TableCell>{item.name}</TableCell>
                         <TableCell>{item.email}</TableCell>
                         <TableCell>{item.phone}</TableCell>
                         <TableCell>{item.buildingId?.buildingName}</TableCell>
                         <TableCell>
-                          <IconButton
-                            // variant="soft"
-                            onClick={() => openUpdateForm(item)}
-                            size="small"
-                            style={{
-                              borderRadius: "16px",
-                              marginRight: "10px",
-                            }}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            // variant="soft"
-                            onClick={() => {
-                              setOpenDeleteDialog(true);
-                              setDeleteId(item.id);
-                            }}
-                            size="small"
-                            style={{ borderRadius: "16px" }}
-                          >
-                            <RemoveCircleIcon />
-                          </IconButton>
+                          <Tooltip title="Edit">
+                            <IconButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openUpdateForm(item);
+                              }}
+                              size="small"
+                              style={{
+                                borderRadius: "16px",
+                                marginRight: "10px",
+                              }}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <IconButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenDeleteDialog(true);
+                                setDeleteId(item.id);
+                              }}
+                              size="small"
+                              style={{ borderRadius: "16px" }}
+                            >
+                              <RemoveCircleIcon />
+                            </IconButton>
+                          </Tooltip>
                         </TableCell>
                       </TableRow>
-                    );
-                  })}
+                    ))}
+                  {emptyRows > 0 && (
+                    <TableRow style={{ height: 53 * emptyRows }}>
+                      <TableCell colSpan={6} />
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
-            </Sheet>
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+              <Select
+                value={rowsPerPage}
+                onChange={handleChangeRowsPerPage}
+                displayEmpty
+                inputProps={{ "aria-label": "Rows per page" }}
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={25}>25</MenuItem>
+              </Select>
+              <Typography sx={{ mx: 2 }}>
+                {page * rowsPerPage + 1}-
+                {Math.min((page + 1) * rowsPerPage, filteredStaff.length)} of{" "}
+                {filteredStaff.length}
+              </Typography>
+              <IconButton
+                onClick={() => handleChangePage(page - 1)}
+                disabled={page === 0}
+              >
+                <KeyboardArrowLeftIcon />
+              </IconButton>
+              <IconButton
+                onClick={() => handleChangePage(page + 1)}
+                disabled={page >= Math.ceil(filteredStaff.length / rowsPerPage) - 1}
+              >
+                <KeyboardArrowRightIcon />
+              </IconButton>
+            </Box>
             <Dialog open={openDeleteDialog}>
-              <DialogTitle>Delete Staff</DialogTitle>
+              <DialogTitle>Xoá nhân viên</DialogTitle>
               <DialogContent>
-                Are you sure you want to delete this staff?
+                Bạn có chắc chắn muốn xoá nhân viên này không?
               </DialogContent>
               <DialogActions>
                 <Button
@@ -267,11 +335,9 @@ const Staff = () => {
                     setOpenDeleteDialog(false);
                   }}
                 >
-                  Delete
+                  Xoá 
                 </Button>
-                <Button onClick={() => setOpenDeleteDialog(false)}>
-                  Cancel
-                </Button>
+                <Button onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
               </DialogActions>
             </Dialog>
             <UpdateStaffForm

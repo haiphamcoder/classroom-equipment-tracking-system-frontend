@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Popup from "reactjs-popup";
-import { Box, TextField, Button, MenuItem } from "@mui/material";
+import { Box, TextField, Button, MenuItem, Typography } from "@mui/material";
 
 const RegisterForm = ({ open, onClose, onSubmit }: any) => {
   const building = [
@@ -26,42 +26,49 @@ const RegisterForm = ({ open, onClose, onSubmit }: any) => {
     buildingName: "",
   });
 
-  // Handle input changes
   const handleChange = (e: any) => {
     const { id, name, value } = e.target;
     setFormData((prev) => ({ ...prev, [id || name]: value }));
   };
 
-  // Handle form submission
   const handleSave = () => {
-    // Validation: Ensure all fields are filled
     const { username, fullName, phone, email, buildingName } = formData;
     if (!username || !fullName || !phone || !email || !buildingName) {
       alert("Please fill all fields.");
       return;
     }
 
-    onSubmit(formData); // Pass the data to parent component
-    onClose(); // Close the popup
+    onSubmit(formData);
+    onClose();
     setFormData({
       username: "",
       fullName: "",
       phone: "",
       email: "",
       buildingName: "",
-    }); // Reset the form
+    });
   };
 
   return (
     <Popup open={open} modal nested onClose={onClose}>
       <Box
-        className="modal"
         component="form"
-        sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          p: 3,
+          width: 400,
+          borderRadius: 2,
+          boxShadow: 3,
+          bgcolor: "background.paper",
+        }}
         noValidate
         autoComplete="off"
       >
-        <div className="header">Add Staff</div>
+        <Typography variant="h6" align="center" gutterBottom>
+          Add Staff
+        </Typography>
         <TextField
           fullWidth
           id="username"
@@ -95,18 +102,12 @@ const RegisterForm = ({ open, onClose, onSubmit }: any) => {
           variant="outlined"
           type="text"
         />
-
         <TextField
           fullWidth
           id="email"
           label="Email"
           value={formData.email}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-            }
-            handleChange(e);
-          }}
+          onChange={handleChange}
           margin="normal"
           variant="outlined"
           type="email"
@@ -129,7 +130,6 @@ const RegisterForm = ({ open, onClose, onSubmit }: any) => {
         </TextField>
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
           <Button
-            className="savebutton"
             onClick={handleSave}
             variant="contained"
             color="primary"
@@ -137,7 +137,6 @@ const RegisterForm = ({ open, onClose, onSubmit }: any) => {
             Save
           </Button>
           <Button
-            className="exitbutton"
             onClick={onClose}
             variant="outlined"
             color="secondary"

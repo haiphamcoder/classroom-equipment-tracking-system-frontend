@@ -9,9 +9,10 @@ const Dashboard = () => {
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) {
-      const parsedUser = JSON.parse(user); // Parse the string to a JavaScript object
+      const parsedUser = JSON.parse(user); 
       if (parsedUser.firstLogin) {
-        navigate("/firstLogin"); // Navigate to the first login page if firstLogin is false
+        
+        navigate("/firstLogin"); 
       }
     }
   }, [navigate]);
