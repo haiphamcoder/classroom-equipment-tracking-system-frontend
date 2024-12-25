@@ -4,8 +4,6 @@ import "../styles/Widget.scss";
 import KeyboardArrowUp from '@mui/icons-material/KeyboardArrowUp';
 import ListSharp from '@mui/icons-material/ListSharp';
 import DeviceHub from '@mui/icons-material/DeviceHub'
-import NewDevicesMenu from "./NewDevicesMenu";
-import NewTicketsMenu from "./NewTicketsMenu";
 import ClickableText from "./ClickableText";
 import { Link } from "react-router-dom";
 const Widget = ({ type }: { type: string }) => {
@@ -43,7 +41,6 @@ const Widget = ({ type }: { type: string }) => {
     case "tickets":
       data = {
         tilte: <div className="New tickets" >
-          <NewTicketsMenu />
         </div>,
         amount: false,
         link: <div className="See all tickets">
@@ -69,7 +66,6 @@ const Widget = ({ type }: { type: string }) => {
     case "devices":
       data = {
         tilte: <div className="New devices" >
-          <NewDevicesMenu />
         </div>,
         link: <div className="See all devices">
           <Link to="/devices" style={{ textDecoration: "none" }}>
