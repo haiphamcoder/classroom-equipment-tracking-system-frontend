@@ -1,38 +1,80 @@
 export interface Device {
-	id: number;
-	name: string;
-	location: string;
-	status: string;
+	id: number,
+	name: string,
+	roomName: string,
+	buildingName: string,
+	status: 'AVAILABLE' | 'UNAVAILABLE' | 'BORROWED' | 'DAMAGED' | 'NORMAL' | 'LOST'
+	quantity: number,
+	action: string,
 }
 
 export interface Ticket {
-	id: number;
-	borrower_id: string,
+	id: number,
+	borrowerName: string,
+	staffName: string,
+	borrowTime: string,
+	returnDeadline: string,
+	status: 'BORROWED' | 'RETURNED' | 'OVERDUE' | 'CANCELED',
+	items: Array<Items>,
+	action: string,
+}
+export interface Items {
+	id: number,
+	equipmentName: string,
+	quantity: number,
+	status: 'AVAILABLE' | 'UNAVAILABLE' | 'BORROWED' | 'DAMAGED' | 'NORMAL' | 'LOST',
+	notes: string,
+}
+export interface NewTicket {
+	borrowerId: number,
+	staffId: number,
+	borrowTime: string,
+	returnDeadline: string,
+	items: Array<NewTicketItems>,
+}
+export interface NewTicketItems {
+	equipmentId: number,
+	quantity: number,
+	notes: string,
+}
+export interface NewDevice {
 	name: string,
-	tag: string,
-	borrow_time: string,
-	expected_return_in: string,
-	return_time: string,
-	device: string,
-	status: string,
+	roomId: number,
+	quantity: number,
+}
+export interface UpdateDevice {
+	id: number,
+	name: string,
+	status: DeviceStatus,
+	quantity: number,
+}
+export interface UpdateTicket {
+	orderId: number,
+	newDeadline: string,
+}
+type DeviceStatus = 'AVAILABLE' | 'UNAVAILABLE' | 'BORROWED' | 'DAMAGED' | 'NORMAL' | 'LOST'
+export interface RoomListId {
+	roomId: number,
 }
 
-export const devicesRow: Device[] = [
-	{ id: 1, name: 'Microphobe', location: 'D9-202', status: 'Active' },
-	{ id: 2, name: 'Eletric Outlet', location: 'D9-202', status: 'Maintenance' },
-	{ id: 3, name: 'Diddy', location: 'Thai Nguyen', status: 'Active' }
-];
-export const devicesCol = [
-	{ field: 'id', headerName: 'ID', width: 100 },
-	{ field: 'name', headrName: 'Name', width: 230 },
-	{ field: 'location', headrName: 'Location', width: 100 },
-	{ field: 'status', headrName: 'Status', width: 300 },
-]
+export interface User {
+	id: number;
+	username: string;
+	password: string;
+}
 
-export const tickets: Ticket[] = [
-	{ id: 1, borrower_id: '20207632', name: 'Nguyen Viet Thanh', tag: 'Student', borrow_time: '15:30', expected_return_in: '17h30', return_time: '00:00', device: 'Microphone', status: 'Borrowed' },
-	{ id: 2, borrower_id: '20207632', name: 'Nguyen Viet Thanh', tag: 'Student', borrow_time: '15:30', expected_return_in: '17h30', return_time: '00:00', device: 'Microphone', status: 'Rerturned' },
-	{ id: 3, borrower_id: '20207632', name: 'Nguyen Viet Thanh', tag: 'Student', borrow_time: '15:30', expected_return_in: '17h30', return_time: '00:00', device: 'Microphone', status: 'Borrowed' },
-	{ id: 4, borrower_id: '20207632', name: 'Nguyen Viet Thanh', tag: 'Student', borrow_time: '15:30', expected_return_in: '17h30', return_time: '00:00', device: 'Microphone', status: 'Overdue' },
-
+export const users: User[] = [
+	{ id: 1, username: 'admin', password: 'admin' },
+	{ id: 2, username: 'user', password: 'user' },
+	{ id: 3, username: 'test', password: 'test' }
 ];
+export const Staff: User[] = [];
+
+export interface TicketExport {
+	borrowerName: string;
+	status: 'BORROWED' | 'RETURNED' | 'OVERDUE' | 'CANCELED',
+	startDate: string;
+	endDate: string;
+	sortBy: 'BORROWER';
+	sortDirection: string;
+}

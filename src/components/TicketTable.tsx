@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import "../styles/DevicesTable.scss";
-import { Device, UpdateDevice } from '../data/mockData';
+import React, { useEffect, useState } from 'react';
+import "../styles/TicketsTable.scss";
+import { Ticket, Items, UpdateTicket } from '../data/mockData';
 import Box from '@mui/joy/Box';
 import Table from '@mui/joy/Table';
 import Typography from '@mui/joy/Typography';
@@ -9,31 +9,30 @@ import Checkbox from '@mui/joy/Checkbox';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import IconButton from '@mui/joy/IconButton';
+import { MoreVertRounded } from '@mui/icons-material';
 import Link from '@mui/joy/Link';
-import EditIcon from '@mui/icons-material/Edit';
-import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import Tooltip from '@mui/joy/Tooltip';
 import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
-import DoneIcon from '@mui/icons-material/Done';
-import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
-import Brightness1Icon from '@mui/icons-material/Brightness1';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import BrokenImageIcon from '@mui/icons-material/BrokenImage';
-import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
-import Button from '@mui/joy/Button';
-import ReportIcon from '@mui/icons-material/Help';
 import DeleteIcon from '@mui/icons-material/Delete';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import Button from '@mui/joy/Button';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import DoneIcon from '@mui/icons-material/Done';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import CancelIcon from '@mui/icons-material/Cancel';
+import { visuallyHidden } from '@mui/utils';
+import EditIcon from '@mui/icons-material/Edit';
 import Input from '@mui/joy/Input';
 import SearchIcon from '@mui/icons-material/Search';
-import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
-import UpdateDevicesMenu from './UpdateDeviceMenu';
-import { downloadExcelFile } from './DeviceExport';
-import NewDevicesMenu from "./NewDevicesMenu";
+import UpdateTicketForm from './UpdateTicketMenu';
+import TicketExportPopup from './TicketExport';
+import NewTicketsMenu from './NewTicketsMenu';
 
 function labelDisplayedRows({
   from,
@@ -62,34 +61,28 @@ function getComparator<Key extends keyof any>(
   order: Order,
   orderBy: Key,
 ): (
-  a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string },
+  a: { [key in Key]: number | string | Array<any> },
+  b: { [key in Key]: number | string | Array<any> },
 ) => number {
   return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
+
 interface HeadCell {
   disablePadding: boolean;
-  id: keyof Device;
+  id: keyof Ticket;
   label: string;
   numeric: boolean;
 }
 interface EnhancedTableProps {
   numSelected: number;
-  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof Device) => void;
+  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof Ticket) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
   order: Order;
   orderBy: string;
   rowCount: number;
 }
-interface HeadCell {
-  disablePadding: boolean;
-  id: keyof Device;
-  label: string;
-  numeric: boolean;
-}
-
 const headCells: readonly HeadCell[] = [
   {
     id: 'id',
@@ -98,48 +91,56 @@ const headCells: readonly HeadCell[] = [
     label: 'Id',
   },
   {
-    id: 'name',
+    id: 'borrowerName',
     numeric: true,
     disablePadding: false,
-    label: 'Name',
+    label: 'Ten nguoi muon',
   },
   {
-    id: 'roomName',
+    id: 'staffName',
     numeric: true,
     disablePadding: false,
-    label: 'Room Name',
+    label: 'ten nhan vien',
   },
   {
-    id: 'buildingName',
+    id: 'borrowTime',
     numeric: true,
     disablePadding: false,
-    label: 'Building Name',
+    label: 'thoi gian muon',
+  },
+
+  {
+    id: 'returnDeadline',
+    numeric: true,
+    disablePadding: false,
+    label: 'thoi gian tra',
   },
   {
     id: 'status',
     numeric: true,
     disablePadding: false,
-    label: 'Status',
+    label: 'trang thai',
   },
   {
-    id: 'quantity',
+    id: 'items',
     numeric: true,
     disablePadding: false,
-    label: 'Quantity',
+    label: 'Thiet bi',
   },
   {
     id: 'action',
     numeric: true,
     disablePadding: false,
-    label: 'Action',
+    label: 'actions',
   },
-];
 
+
+];
 function EnhancedTableHead(props: EnhancedTableProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
     props;
   const createSortHandler =
-    (property: keyof Device) => (event: React.MouseEvent<unknown>) => {
+    (property: keyof Ticket) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
     };
 
@@ -153,7 +154,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
             onChange={onSelectAllClick}
             slotProps={{
               input: {
-                'aria-label': 'select all devices',
+                'aria-label': 'select all tickets',
               },
             }}
             sx={{ verticalAlign: 'sub' }}
@@ -164,7 +165,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
           return (
             <th
               key={headCell.id}
-              align={headCell.id ? 'right' : 'left'}
               aria-sort={
                 active
                   ? ({ asc: 'ascending', desc: 'descending' } as const)[order]
@@ -192,6 +192,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
                   },
 
                   '&:hover': { '& svg': { opacity: 1 } },
+
                   '&:focus': { outline: 'none', boxShadow: 'none' },
                 }}
               >
@@ -273,59 +274,41 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-
-export var list_response: any = [];
-export var total_rows = 0;
 export default function TableSortAndSelection() {
-  const [device, setDevices] = useState<Device[]>([]);
-  const [_deviceToEdit, _setDeviceToEdit] = useState<UpdateDevice | null>(null);
-  const [filteredDevice, setFilterDevice] = useState<Device[]>([]);
+  const [ticket, setTicket] = useState<Ticket[]>([]);
+  const [filteredTicket, setFilterTicket] = useState<Ticket[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDevice, setSelectedDevice] = useState<UpdateDevice | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<UpdateTicket | null>(null);
   const [_dialogOpen, setDialogOpen] = useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
-  const [order, setOrder] = React.useState<Order>('asc');
-  const [orderBy, setOrderBy] = React.useState<keyof Device>('id');
-  const [selected, setSelected] = React.useState<readonly string[]>([]);
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [showNewDevicePopup, setShowNewDevicePopup] = useState(false);
-
-  const getStatusInfo = (status: any) => {
-    switch (status) {
-      case 'AVAILABLE':
-        return { icon: <DoneIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#d4f8c4' };
-      case 'UNAVAILABLE':
-        return { icon: <DoNotDisturbIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#F87071' };
-      case 'BORROWED':
-        return { icon: <HourglassEmptyIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#f8e084' };
-      case 'DAMAGED':
-        return { icon: <BrokenImageIcon sx={{ fontSize: 10 }} />, bgColor: '#e5a6a6' };
-      case 'NORMAL':
-        return { icon: <Brightness1Icon sx={{ fontSize: 10 }} />, bgColor: '#f0f0f0' };
-      case 'LOST':
-        return { icon: <ReportIcon sx={{ fontSize: 10 }} />, bgColor: '#e1c2f9' };
-      default:
-        return { icon: null, bgColor: '#f9f9f9' }; // Default
-    }
-  };
+  const [showPopup, setShowPopup] = useState(false);
 
   const fetchData = async () => {
     try {
-      const response = await axios.get("/api/equipment/list");
+      const response = await axios.get("/api/order/list", {
+        params: {
+          sort: "ASC",
+          sortBy: "BORROW_TIME"
+        }
+      });
       const mapped_response = response.data.map((item: any) => ({
         id: item.id,
-        name: item.name,
-        roomName: item.room?.roomName ?? "Unknown",
-        buildingName: item.room?.building?.buildingName ?? "Unknown",
-        quantity: item.quantity,
+        borrowerName: item.borrowerName,
+        staffName: item.staffName,
+        borrowTime: item.borrowTime,
+        returnDeadline: item.returnDeadline,
+        items: item.items.map((equipment: any) => ({
+          equipmentName: equipment.equipmentName,
+          quantity: equipment.quantity
+        })),
+        returnTime: item.returnTime,
         status: item.status,
+        actions: (<IconButton onClick={() => handleActionClick(item.id)}>
+          <MoreVertRounded />
+        </IconButton>)
       }));
-      setDevices(mapped_response);
-      setFilterDevice(mapped_response);
-      total_rows = mapped_response.length;
-      list_response = mapped_response;
-
+      setTicket(mapped_response);
+      setFilterTicket(mapped_response);
     } catch (error) {
       console.error("Error fetching ticket data:", error);
     }
@@ -341,74 +324,119 @@ export default function TableSortAndSelection() {
     return () => clearInterval(intervalId);
 
   }, []);
+  const rows = filteredTicket;
 
   const handleDelete = async (ids: number[]) => {
-    console.log("Deleting items with IDs:", ids); // Log the IDs to be deleted
-
-    if (!window.confirm("Are you sure you want to delete these devices?")) {
+    console.log("Deleting item with ID:", ids); // Check if this is logged when clicking Delete button
+    if (!window.confirm("Are you sure you want to delete this device?")) {
       return;
     }
 
     try {
-      // Send a POST request to delete the items
-      await axios.post("/api/equipment/delete", { ids }); // Sending the array of IDs as the payload
-      // Update state to remove the deleted items
-      setDevices(device.filter((item) => !ids.at(item.id)));
-      setFilterDevice(filteredDevice.filter((item) => !ids.at(item.id)));
-
-      console.log(`Devices with IDs ${ids.join(", ")} deleted successfully.`);
+      // Send a POST request to delete the item
+      await axios.post("/api/order/cancel/", { ids });
+      setTicket(ticket.filter((item) => !ids.at(item.id))); // Remove item from the state
+      setFilterTicket(filteredTicket.filter((item) => !ids.at(item.id)));
+      console.log(`Device with ID ${ids.join(", ")} deleted successfully.`);
     } catch (error) {
-      console.error("Error deleting devices:", error);
-      console.log("Try to delete: ", ids);
-      alert("An error occurred while deleting the devices. Please try again.");
+      console.error("Error deleting device:", error);
+      alert("An error occurred while deleting the device. Please try again.");
     }
   };
-
-  const rows = filteredDevice;
 
   // Search handler
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
     setSearchTerm(term);
-    const filtered = device.filter((item) =>
-      item.name.toLowerCase().includes(term.toLowerCase()) ||
-      item.roomName.toLowerCase().includes(term.toLowerCase()) ||
-      item.buildingName.toLowerCase().includes(term.toLowerCase()) ||
+    const filtered = ticket.filter((item) =>
+      item.borrowerName.toLowerCase().includes(term.toLowerCase()) ||
+      item.staffName.toLowerCase().includes(term.toLowerCase()) ||
       item.status.toLowerCase().includes(term.toLowerCase()) ||
-      item.quantity.toString().toLowerCase().includes(term.toLowerCase())
+      item.borrowTime.toLowerCase().includes(term.toLowerCase()) ||
+      item.returnDeadline.toLowerCase().includes(term.toLowerCase())
     );
-    setFilterDevice(filtered);
+    setFilterTicket(filtered);
   };
 
-  const handleUpdate = async (updatedDevice: any) => {
+  const handleUpdate = async (updatedTicket: any) => {
     try {
-      const response = await axios.post("/api/equipment/update", updatedDevice);
+      // Construct the payload to include the orderId (ticket id) and new deadline
+      const payload = {
+        orderId: updatedTicket.id, // Include the orderId
+        newDeadline: updatedTicket.newDeadline, // Ensure this is coming from the update form
+      };
+
+      // Send the payload to the API
+      const response = await axios.post("/api/order/extend-deadline", payload);
+
       if (response.status === 200) {
         alert("Device updated successfully.");
-        fetchData();  // Refetch the devices list after update
+        fetchData(); // Refetch the tickets list after update
       } else {
-        alert("Failed to update device.");
+        alert("Failed to update the device.");
       }
-      setDevices(device.map((item) => (item.id === updatedDevice.id ? response.data : item)));
-      setFilterDevice(filteredDevice.map((item) => (item.id === updatedDevice.id ? response.data : item)));
+
+      // Update the ticket in the state
+      setTicket(
+        ticket.map((item) =>
+          item.id === updatedTicket.id ? response.data : item
+        )
+      );
       setUpdateDialogOpen(false);
     } catch (error) {
       console.error("Error updating device:", error);
     }
-  };
-  // Open update form
-  const openUpdateForm = (device: any) => {
-    setSelectedDevice(device);
+  };  // Open update form
+  const openUpdateForm = (ticket: any) => {
+    setSelectedTicket(ticket);
     setUpdateDialogOpen(true);
+  };
+
+  // format items for display
+  const formatItems = (items: Items[]) => {
+    return items.map(item =>
+      `${item.equipmentName}(${item.quantity})`
+    ).join(', ');
+  };
+  // format time
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+  const [order, setOrder] = React.useState<Order>('asc');
+  const [orderBy, setOrderBy] = React.useState<keyof Ticket>('id');
+  const [selected, setSelected] = React.useState<readonly string[]>([]);
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [showNewTicketPopup, setShowNewTicketPopup] = useState(false);
+
+  const getStatusInfo = (status: any) => {
+    switch (status) {
+      case 'RETURNED':
+        return { icon: <DoneIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#d4f8c4' };
+      case 'BORROWED':
+        return { icon: <HourglassEmptyIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#f8e084' };
+      case 'OVERDUE':
+        return { icon: <WatchLaterIcon sx={{ fontSize: 10 }} />, bgColor: '#F8AE3F' };
+      case 'CANCELLED':
+        return { icon: <CancelIcon sx={{ fontSize: 10 }} />, bgColor: '#F5B5B5' };
+      default:
+        return { icon: null, bgColor: '#f9f9f9' }; // Default
+    }
   };
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
-    property: keyof Device,
+    property: keyof Ticket,
   ) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
+  const handleActionClick = (_id: number) => {
+    console.log("clicked")
+  }
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
       const newSelected: any = rows.map((n) => n.id);
@@ -449,15 +477,20 @@ export default function TableSortAndSelection() {
       ? rows.length
       : Math.min(rows.length, (page + 1) * rowsPerPage);
   };
+
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+
   return (
-    <main className='device_main' style={{ marginLeft: '250px' }}>
-      <header className='DeviceHeader'
+    <main className='ticket_main' style={{
+
+      marginLeft: '250px'
+    }}>
+      <header className='TicketHeader'
         style={{ width: 500, marginTop: '30px', marginLeft: '50px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '40px', backgroundColor: 'transparent' }}
-      >Devices</header>
-      <Box className='search_and_export' sx={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+      >Tickets</header>
+      <Box className='search_and_export' sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
         <Input
           startDecorator={<SearchIcon />}
           placeholder='Search'
@@ -466,12 +499,14 @@ export default function TableSortAndSelection() {
           onChange={handleSearch}
           style={{ width: 800, top: 20, marginLeft: '50px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px', border: '1px solid #ccc', backgroundColor: 'transparent' }}
         />
+
         <Box sx={{ display: 'flex', gap: 2, marginLeft: '415px' }}>
-          <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowNewDevicePopup(true); console.log("Click") }}
-          >New Device</Button>
-          <NewDevicesMenu open={showNewDevicePopup} onClose={() => setShowNewDevicePopup(false)} />
-          <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={downloadExcelFile}
+          <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowNewTicketPopup(true); console.log("click") }}
+          >New Ticket</Button>
+          <NewTicketsMenu open={showNewTicketPopup} onClose={() => setShowNewTicketPopup(false)} />
+          <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowPopup(true); console.log("click") }}
           >Export</Button>
+          <TicketExportPopup open={showPopup} onClose={() => setShowPopup(false)} />
         </Box>
       </Box>
       <Sheet variant="outlined"
@@ -487,7 +522,7 @@ export default function TableSortAndSelection() {
             '--TableCell-selectedBackground': (theme) =>
               theme.vars.palette.success.softBg,
             '& thead th:nth-child(1)': {
-              width: '20px',
+              width: '30px',
             },
             '& thead th:nth-child(2)': {
               width: 'flex',
@@ -541,9 +576,10 @@ export default function TableSortAndSelection() {
                     <th id={labelId} scope="row" style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>
                       {row.id}
                     </th>
-                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.name}</td>
-                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.roomName}</td>
-                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.buildingName}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.borrowerName}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.staffName}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatTime(row.borrowTime)}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatTime(row.returnDeadline)}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>
                       <div style={{
                         display: 'inline',
@@ -558,7 +594,7 @@ export default function TableSortAndSelection() {
                         {row.status}
                       </div>
                     </td>
-                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.quantity}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatItems(row.items)}</td>
                     <td>
                       <IconButton
                         variant="soft"
@@ -573,11 +609,11 @@ export default function TableSortAndSelection() {
                         <EditIcon style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '20px', alignItems: 'start' }}
                         />
                       </IconButton>
-                      <UpdateDevicesMenu
+                      <UpdateTicketForm
                         open={updateDialogOpen}
                         onClose={() => setUpdateDialogOpen(false)}
                         onSubmit={handleUpdate}
-                        deviceData={selectedDevice} />
+                        ticketData={selectedTicket} />
                       <IconButton
                         variant="soft"
                         onClick={(e) => {
@@ -589,8 +625,7 @@ export default function TableSortAndSelection() {
                       >
                         <RemoveCircleIcon style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '20px', alignItems: 'start' }}
                         />
-                      </IconButton>
-                    </td>
+                      </IconButton></td>
                   </tr>
                 );
               })}
@@ -603,25 +638,24 @@ export default function TableSortAndSelection() {
                   } as React.CSSProperties
                 }
               >
-                <td colSpan={7} aria-hidden />
+                <td colSpan={8} aria-hidden />
               </tr>
             )}
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan={8}>
+              <td colSpan={9}>
                 <Box
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 3,
+                    gap: 5,
                     justifyContent: 'flex-end',
                   }}
                 >
                   <FormControl orientation="horizontal" size="sm">
                     <FormLabel>Rows per page:</FormLabel>
-                    <Select onChange={handleChangeRowsPerPage} value={rowsPerPage}
-                    >
+                    <Select onChange={handleChangeRowsPerPage} value={rowsPerPage}>
                       <Option value={5}>5</Option>
                       <Option value={10}>10</Option>
                       <Option value={25}>25</Option>
@@ -665,7 +699,7 @@ export default function TableSortAndSelection() {
             </tr>
           </tfoot>
         </Table>
-      </Sheet >
-    </main>
+      </Sheet>
+    </main >
   );
 }

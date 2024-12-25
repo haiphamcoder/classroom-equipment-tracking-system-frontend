@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Enviroment
+.env
+.vite.config.ts
+package-lock.json

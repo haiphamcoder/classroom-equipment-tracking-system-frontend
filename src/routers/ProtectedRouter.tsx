@@ -1,6 +1,6 @@
 import React from "react";
 import { useAuth } from "../context/useAuth";
-import { Login } from "../views/Login";
+import { Login } from "../pages/Login";
 
 type Props = { children: React.ReactNode };
 export const ProtectedRouters = ({ children }: Props) => {

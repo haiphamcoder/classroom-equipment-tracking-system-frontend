@@ -1,24 +1,50 @@
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import Widget from '../components/Widget';
-import Table from '../components/Table';
-import "../styles/Dashboard.scss"
+import Sidebar from "../components/Sidebar";
+import Widget from "../components/Widget";
+import Table from "../components/Table";
+import "../styles/Dashboard.scss";
+import Box from "@mui/joy/Box";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      const parsedUser = JSON.parse(user); // Parse the string to a JavaScript object
+      if (parsedUser.firstLogin) {
+        navigate("/firstLogin"); // Navigate to the first login page if firstLogin is false
+      }
+    }
+  }, [navigate]);
   return (
-    <div className="dashboard">
+    <main className="dashboard">
       <Sidebar />
-      <div className="homeContainer">
-        <Navbar />
-        <div className='widgets'>
+      <Box className="homeContainer">
+        <header className='DeviceHeader'
+          style={{ width: 500, marginTop: '30px', marginLeft: '50px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '40px', backgroundColor: 'transparent' }}
+        >Dashboard</header>
+        <Box className="widgets">
           <Widget type="tickets" />
           <Widget type="devices" />
-        </div>
-        <div className='listContainer'>
-          <div className='listTitle'>Ticket table</div>
+        </Box>
+        <Box className="listContainer" sx={{ backgroundColor: '#f0f4f8', }}>
+          <div className="listTitle" style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '20px' }}
+          >Recent Tickets</div>
           <Table />
-        </div>
-      </div>
-    </div>
+        </Box>
+        <Box className="listContainer" sx={{ backgroundColor: '#f0f4f8', }}>
+          <div className="listTitle" style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '20px' }}
+          >Recent Tickets</div>
+          <Table />
+        </Box>
+        <Box className="listContainer" sx={{ backgroundColor: '#f0f4f8', }}>
+          <div className="listTitle" style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '20px' }}
+          >Recent Tickets</div>
+          <Table />
+        </Box>
+
+      </Box>
+    </main>
   );
 };
 
