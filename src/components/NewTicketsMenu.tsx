@@ -14,8 +14,11 @@ import {
 import { Remove, Add } from "@mui/icons-material";
 import axios from "axios";
 import { NewTicketItems, NewTicket } from "../data/mockData";
-import dayjs, { Dayjs } from 'dayjs';
-// import { list_response } from "./DeviceTable";
+// import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+// import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+// import dayjs, { Dayjs } from 'dayjs';
 
 const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const [loading, setLoading] = useState(false);
@@ -75,16 +78,7 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
 
   const formatDateTimeForInput = (isoString: string) => {
     const date = new Date(isoString);
-
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    const hours = String(date.getUTCHours()).padStart(2, '0');
-    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
-    const milliseconds = String(date.getUTCMilliseconds()).padStart(3, '0');
-
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
+    return date.toISOString().slice(0, 16); // Format: "YYYY-MM-DDThh:mm"
   };
 
   const handleDateTimeChange = (field: "borrowTime" | "returnDeadline", value: string) => {

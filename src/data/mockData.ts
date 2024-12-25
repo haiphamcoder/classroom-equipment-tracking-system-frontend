@@ -79,3 +79,15 @@ export interface TicketExport {
 	sortBy: 'BORROWER';
 	sortDirection: string;
 }
+export interface ReturnOrderItem {
+	orderItemId: number;
+	returnQuantity: number;
+	status: 'AVAILABLE' | 'UNAVAILABLE' | 'BORROWED' | 'DAMAGED' | 'NORMAL' | 'LOST',
+	notes: string;
+}
+
+export interface ReturnOrderRequest {
+	orderId: number;
+	staffId: number;
+	items: ReturnOrderItem[];
+}
