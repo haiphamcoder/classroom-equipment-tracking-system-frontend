@@ -12,6 +12,7 @@ export interface Ticket {
 	id: number,
 	borrowerName: string,
 	staffName: string,
+	date: string
 	borrowTime: string,
 	returnDeadline: string,
 	status: 'BORROWED' | 'RETURNED' | 'OVERDUE' | 'CANCELED',

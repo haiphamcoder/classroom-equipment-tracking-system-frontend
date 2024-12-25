@@ -103,6 +103,12 @@ const headCells: readonly HeadCell[] = [
     label: 'ten nhan vien',
   },
   {
+    id: 'date',
+    numeric: true,
+    disablePadding: false,
+    label: 'Ngay',
+  },
+  {
     id: 'borrowTime',
     numeric: true,
     disablePadding: false,
@@ -294,6 +300,7 @@ export default function TableSortAndSelection() {
       const mapped_response = response.data.map((item: any) => ({
         id: item.id,
         borrowerName: item.borrowerName,
+        date: item.borrowTime,
         staffName: item.staffName,
         borrowTime: item.borrowTime,
         returnDeadline: item.returnDeadline,
@@ -404,6 +411,14 @@ export default function TableSortAndSelection() {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
+  };
+  // format Date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   };
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Ticket>('id');
@@ -577,6 +592,7 @@ export default function TableSortAndSelection() {
                     </th>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.borrowerName}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.staffName}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatDate(row.date)}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatTime(row.borrowTime)}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatTime(row.returnDeadline)}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>
@@ -637,13 +653,13 @@ export default function TableSortAndSelection() {
                   } as React.CSSProperties
                 }
               >
-                <td colSpan={8} aria-hidden />
+                <td colSpan={9} aria-hidden />
               </tr>
             )}
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan={9}>
+              <td colSpan={10}>
                 <Box
                   sx={{
                     display: 'flex',
