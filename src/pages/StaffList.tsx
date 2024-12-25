@@ -16,7 +16,6 @@ import {
   TextField,
 } from "@mui/material";
 import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
 import RegisterForm from "../components/RegisterForm";
 import UpdateStaffForm from "../components/UpdateStaffForm";
 import CustomAlert from "../components/CustomAlert";
@@ -160,7 +159,6 @@ const Staff = () => {
       <div className="dashboard">
         <Sidebar />
         <div className="homeContainer">
-          <Navbar />
           <div className="widgets"></div>
           <div className="listContainer">
             <Button variant="contained" onClick={() => setDialogOpen(true)}>

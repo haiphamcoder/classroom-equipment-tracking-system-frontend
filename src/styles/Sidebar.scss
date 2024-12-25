@@ -1,13 +1,16 @@
 
 .sidebar {
-  flex: 1;
-  border-right: 1px solid #e6e3e3;
-  min-height: 100vh;
+  position: fixed;  /* Make the sidebar fixed */
+  top: 0;  /* Align the sidebar to the top of the screen */
+  left: 0;  /* Align the sidebar to the left */
+  width: 250px;  /* Adjust the width as necessary */
+  min-height: 100vh;  /* Ensure it takes up the full height */
   background-color: #fbfcfe;
+  border-right: 1px solid #e6e3e3;
   display: flex;
   flex-direction: column;
-
-  .top {
+  z-index: 1000;  /* Keep the sidebar on top of other elements */
+  overflow-y: auto;  /* Enable scrolling if the content exceeds the sidebar height */  .top {
     height: 100px;
     display: flex;
     align-items: center;

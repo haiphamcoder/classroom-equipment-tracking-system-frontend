@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import "../styles/TicketsTable.scss";
-import { Ticket, Items, UpdateTicket, TicketExport } from '../data/mockData';
+import { Ticket, Items, UpdateTicket } from '../data/mockData';
 import Box from '@mui/joy/Box';
 import Table from '@mui/joy/Table';
 import Typography from '@mui/joy/Typography';
@@ -32,6 +32,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
 import UpdateTicketForm from './UpdateTicketMenu';
 import TicketExportPopup from './TicketExport';
+import NewTicketsMenu from './NewTicketsMenu';
 
 function labelDisplayedRows({
   from,
@@ -191,6 +192,8 @@ function EnhancedTableHead(props: EnhancedTableProps) {
                   },
 
                   '&:hover': { '& svg': { opacity: 1 } },
+
+                  '&:focus': { outline: 'none', boxShadow: 'none' },
                 }}
               >
                 {headCell.label}
@@ -270,6 +273,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     </Box>
   );
 }
+
 export default function TableSortAndSelection() {
   const [ticket, setTicket] = useState<Ticket[]>([]);
   const [filteredTicket, setFilterTicket] = useState<Ticket[]>([]);
@@ -406,6 +410,7 @@ export default function TableSortAndSelection() {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [showNewTicketPopup, setShowNewTicketPopup] = useState(false);
 
   const getStatusInfo = (status: any) => {
     switch (status) {
@@ -415,7 +420,7 @@ export default function TableSortAndSelection() {
         return { icon: <HourglassEmptyIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#f8e084' };
       case 'OVERDUE':
         return { icon: <WatchLaterIcon sx={{ fontSize: 10 }} />, bgColor: '#F8AE3F' };
-      case 'CANCEL':
+      case 'CANCELLED':
         return { icon: <CancelIcon sx={{ fontSize: 10 }} />, bgColor: '#F5B5B5' };
       default:
         return { icon: null, bgColor: '#f9f9f9' }; // Default
@@ -478,7 +483,10 @@ export default function TableSortAndSelection() {
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
   return (
-    <main className='ticket_main'>
+    <main className='ticket_main' style={{
+
+      marginLeft: '250px'
+    }}>
       <header className='TicketHeader'
         style={{ width: 500, marginTop: '30px', marginLeft: '50px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '40px', backgroundColor: 'transparent' }}
       >Tickets</header>
@@ -491,9 +499,15 @@ export default function TableSortAndSelection() {
           onChange={handleSearch}
           style={{ width: 800, top: 20, marginLeft: '50px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px', border: '1px solid #ccc', backgroundColor: 'transparent' }}
         />
-        <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, marginLeft: '570px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowPopup(true); console.log("click") }}
-        >Export</Button>
-        <TicketExportPopup open={showPopup} onClose={() => setShowPopup(false)} />
+
+        <Box sx={{ display: 'flex', gap: 2, marginLeft: '415px' }}>
+          <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowNewTicketPopup(true); console.log("click") }}
+          >New Ticket</Button>
+          <NewTicketsMenu open={showNewTicketPopup} onClose={() => setShowNewTicketPopup(false)} />
+          <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowPopup(true); console.log("click") }}
+          >Export</Button>
+          <TicketExportPopup open={showPopup} onClose={() => setShowPopup(false)} />
+        </Box>
       </Box>
       <Sheet variant="outlined"
         sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '10px', top: { xs: '10%', md: '50px' }, left: '50px', backgroundColor: 'whitesmoke' }
@@ -686,6 +700,6 @@ export default function TableSortAndSelection() {
           </tfoot>
         </Table>
       </Sheet>
-    </main>
+    </main >
   );
 }

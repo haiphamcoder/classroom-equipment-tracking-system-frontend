@@ -1,9 +1,11 @@
 .dashboard {
   display: flex;
-
+  height: 100vh;
+  overflow-y: auto;  // Enables vertical scrolling
+  overflow-x: hidden;  // Hides horizontal scrolling
   .homeContainer {
     flex: 6;
-
+ margin-left: 250px;
     .widgets,
     .charts {
       display: flex;

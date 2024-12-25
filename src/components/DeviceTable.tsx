@@ -225,11 +225,10 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           pr: { xs: 1, sm: 1 },
           borderTopLeftRadius: 'var(--unstable_actionRadius)',
           borderTopRightRadius: 'var(--unstable_actionRadius)',
+          borderBottom: '1px solid #ddd',
           backgroundColor: '#dde7ee',
-          borderBottom: '1px solid #ddd'
         },
         numSelected > 0 && {
-          backgroundColor: '#dde7ee',
           display: 'flex',
           alignItems: 'center',
           py: 1,
@@ -237,21 +236,13 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           pr: { xs: 1, sm: 1 },
           borderTopLeftRadius: 'var(--unstable_actionRadius)',
           borderTopRightRadius: 'var(--unstable_actionRadius)',
-          borderBottom: '1px solid #ddd'
-
+          borderBottom: '1px solid #ddd',
+          backgroundColor: '#dde7ee',
         },
       ]}
     >
       {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: '1 1 100%' }}
-          component="div"
-          level="body-lg"
-          fontFamily={"Inter"}
-          fontWeight={600}
-          fontSize='1rem'
-          lineHeight='1.5'
-        >
+        <Typography sx={{ flex: '1 1 100%' }} component="div">
           {numSelected} selected
         </Typography>
       ) : (
@@ -265,11 +256,11 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           fontSize='1rem'
           lineHeight='1.5'
         >
-          O selected
+          0 selected
         </Typography>
       )}
       {numSelected > 0 ? (
-        <Tooltip title="Delete All">
+        <Tooltip title="Xoa">
           <IconButton size="sm" color="danger" variant="solid">
             <DeleteIcon />
           </IconButton>
@@ -278,9 +269,11 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         <IconButton size="sm">
         </IconButton>
       )}
-    </Box >
+    </Box>
   );
 }
+
+
 export var list_response: any = [];
 export var total_rows = 0;
 export default function TableSortAndSelection() {
@@ -296,6 +289,7 @@ export default function TableSortAndSelection() {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [showNewDevicePopup, setShowNewDevicePopup] = useState(false);
 
   const getStatusInfo = (status: any) => {
     switch (status) {
@@ -459,7 +453,7 @@ export default function TableSortAndSelection() {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
   return (
-    <main className='device_main'>
+    <main className='device_main' style={{ overflowX: 'auto', maxWidth: '100%', marginLeft: '250px' }}>
       <header className='DeviceHeader'
         style={{ width: 500, marginTop: '30px', marginLeft: '50px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '40px', backgroundColor: 'transparent' }}
       >Devices</header>
@@ -473,8 +467,9 @@ export default function TableSortAndSelection() {
           style={{ width: 800, top: 20, marginLeft: '50px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px', border: '1px solid #ccc', backgroundColor: 'transparent' }}
         />
         <Box sx={{ display: 'flex', gap: 2, marginLeft: '415px' }}>
-          <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={<NewDevicesMenu />}
+          <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowNewDevicePopup(true); console.log("Click") }}
           >New Device</Button>
+          <NewDevicesMenu open={showNewDevicePopup} onClose={() => setShowNewDevicePopup(false)} />
           <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={downloadExcelFile}
           >Export</Button>
         </Box>
@@ -625,7 +620,8 @@ export default function TableSortAndSelection() {
                 >
                   <FormControl orientation="horizontal" size="sm">
                     <FormLabel>Rows per page:</FormLabel>
-                    <Select onChange={handleChangeRowsPerPage} value={rowsPerPage}>
+                    <Select onChange={handleChangeRowsPerPage} value={rowsPerPage}
+                    >
                       <Option value={5}>5</Option>
                       <Option value={10}>10</Option>
                       <Option value={25}>25</Option>

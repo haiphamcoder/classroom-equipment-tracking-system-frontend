@@ -9,7 +9,7 @@ type CustomAlertProps = {
 
 const CustomAlert: React.FC<CustomAlertProps> = ({ type, title, message }) => {
   return (
-    <Alert severity={type} sx={{ mb: 2 }}>
+    <Alert severity={type} sx={{ mb: 2, marginLeft: '250px' }}>
       <AlertTitle>{title}</AlertTitle>
       {message}
     </Alert>

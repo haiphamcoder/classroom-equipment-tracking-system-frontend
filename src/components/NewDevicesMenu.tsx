@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import Popup from 'reactjs-popup';
 import ClickableText from "./ClickableText";
@@ -6,7 +5,7 @@ import "../styles/NewDevicesMenu.scss";
 import { TextField, Box, MenuItem, Snackbar } from "@mui/material";
 import axios from "axios";
 
-function NewDevicesMenu() {
+const NewDevicesMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const [formData, setFormData] = useState({
     name: "",
     roomId: 0,
@@ -95,8 +94,10 @@ function NewDevicesMenu() {
   return (
     <>
       <Popup
+        open={open}
+        onClose={onClose}
         ref={ref}
-        trigger={<ClickableText text="Add devices" onClick={() => { }} />}
+        // trigger={<ClickableText text="Add devices" onClick={() => { }} />}
         modal
         nested
       >
