@@ -484,7 +484,6 @@ export default function TableSortAndSelection() {
 
   return (
     <main className='ticket_main' style={{
-
       marginLeft: '250px'
     }}>
       <header className='TicketHeader'

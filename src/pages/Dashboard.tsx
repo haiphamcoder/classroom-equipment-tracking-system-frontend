@@ -42,7 +42,6 @@ const Dashboard = () => {
           >Recent Tickets</div>
           <Table />
         </Box>
-
       </Box>
     </main>
   );
