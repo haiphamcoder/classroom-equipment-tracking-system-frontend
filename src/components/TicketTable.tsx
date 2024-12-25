@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import "../styles/TicketsTable.scss";
-import { Ticket, Items, UpdateTicket, ReturnOrderRequest, ReturnOrderItem } from '../data/mockData';
+import { Ticket, Items, UpdateTicket, ReturnOrderRequest } from '../data/mockData';
 import Box from '@mui/joy/Box';
 import Table from '@mui/joy/Table';
 import Typography from '@mui/joy/Typography';
@@ -34,7 +34,6 @@ import UpdateTicketForm from './UpdateTicketMenu';
 import TicketExportPopup from './TicketExport';
 import NewTicketsMenu from './NewTicketsMenu';
 import { staff_id } from '../context/useAuth';
-import { locale } from 'dayjs';
 
 
 function labelDisplayedRows({
