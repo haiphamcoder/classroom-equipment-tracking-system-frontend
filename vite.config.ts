@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/classroom-equipment-tracking-system-frontend',
+  base: 'haiphamcoder.github.io/classroom-equipment-tracking-system-frontend',
   plugins: [react()],
   server: {
     proxy: {
