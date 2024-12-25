@@ -15,7 +15,6 @@ import Tooltip from '@mui/joy/Tooltip';
 import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
 import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';

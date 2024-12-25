@@ -6,11 +6,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Paper,
+  IconButton,
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   TextField,
@@ -20,6 +19,9 @@ import Navbar from "../components/Navbar";
 import RegisterForm from "../components/RegisterForm";
 import UpdateStaffForm from "../components/UpdateStaffForm";
 import CustomAlert from "../components/CustomAlert";
+import Sheet from "@mui/joy/Sheet";
+import EditIcon from "@mui/icons-material/Edit";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 
 export type Staff = {
   id: string | "";
@@ -150,112 +152,127 @@ const Staff = () => {
 
   return (
     <div>
-      {alert && (
-        <CustomAlert
-          type={alert.type as "success" | "info" | "warning" | "error"}
-          title={alert.type === "success" ? "Thành công" : "Lỗi"}
-          message={alert.message}
-        />
-      )}
-      <div className="dashboard">
-        <Sidebar />
-        <div className="homeContainer">
-          <Navbar />
-          <div className="widgets"></div>
-          <div className="listContainer">
-            <Button variant="contained" onClick={() => setDialogOpen(true)}>
-              Add new staff
-            </Button>
-            <RegisterForm
-              open={dialogOpen}
-              onClose={handleClose}
-              onSubmit={handleAddStaff}
-            />
-            <TextField
-              label="Search by name"
-              variant="outlined"
-              value={searchTerm}
-              onChange={handleSearch}
-              fullWidth
-              margin="normal"
-            />
-            <Dialog open={openDeleteDialog}>
-              <DialogTitle>Xoa nhan vien</DialogTitle>
-              <DialogContent>
-                Ban co chac chan muon xoa nhan vien nay khong?
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  onClick={() => {
-                    handleDelete(deleteId);
-                    setOpenDeleteDialog(false);
-                  }}
-                >
-                  Xoa
-                </Button>
-                <Button onClick={() => setOpenDeleteDialog(false)}>Huy</Button>
-              </DialogActions>
-            </Dialog>
-            <TableContainer component={Paper} className="table">
-              <Table sx={{ minWidth: 650 }} aria-label="staff table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Staff ID</TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Phone</TableCell>
-                    <TableCell>Building</TableCell>
-                    <TableCell>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredStaff.map((item) => {
-                    if (item.admin === true) {
-                      return null;
-                    } else {
-                      return (
-                        <TableRow key={item.id}>
-                          <TableCell>{item.id}</TableCell>
-                          <TableCell>{item.name}</TableCell>
-                          <TableCell>{item.email}</TableCell>
-                          <TableCell>{item.phone}</TableCell>
-                          <TableCell>{item.buildingId?.buildingName}</TableCell>
-                          <TableCell>
-                            <Button
-                              variant="contained"
-                              color="primary"
-                              onClick={() => openUpdateForm(item)}
-                            >
-                              Update
-                            </Button>
-                            <Button
-                              variant="contained"
-                              color="error"
-                              onClick={() => {
-                                setOpenDeleteDialog(true);
-                                setDeleteId(item.id);
-                              }}
-                            >
-                              Delete
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    }
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </div>
+    {alert && (
+      <CustomAlert
+        type={alert.type as "success" | "info" | "warning" | "error"}
+        title={alert.type === "success" ? "Thành công" : "Lỗi"}
+        message={alert.message}
+      />
+    )}
+    <div className="dashboard">
+      <Sidebar />
+      <div className="homeContainer">
+        <Navbar />
+        <div className="widgets"></div>
+        <main className="listContainer">
+          <header
+            style={{
+              fontSize: "32px",
+              fontWeight: "600",
+              marginBottom: "20px",
+              fontFamily: "Inter, serif",
+            }}
+          >
+            Staff List
+          </header>
+          <Button variant="contained" onClick={() => setDialogOpen(true)}>
+            Add New Staff
+          </Button>
+          <RegisterForm
+            open={dialogOpen}
+            onClose={handleClose}
+            onSubmit={handleAddStaff}
+          />
+          <TextField
+            label="Search by name"
+            variant="outlined"
+            value={searchTerm}
+            onChange={handleSearch}
+            fullWidth
+            margin="normal"
+          />
+          <Sheet
+            variant="outlined"
+            sx={{
+              width: "100%",
+              borderRadius: "10px",
+              marginTop: "20px",
+              backgroundColor: "whitesmoke",
+            }}
+          >
+            <Table aria-labelledby="tableTitle">
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Phone</TableCell>
+                  <TableCell>Building</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredStaff.map((item) => {
+                  if (item.admin) return null;
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell>{item.id}</TableCell>
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell>{item.email}</TableCell>
+                      <TableCell>{item.phone}</TableCell>
+                      <TableCell>{item.buildingId?.buildingName}</TableCell>
+                      <TableCell>
+                        <IconButton
+                          // variant="soft"
+                          onClick={() => openUpdateForm(item)}
+                          size="small"
+                          style={{ borderRadius: "16px", marginRight: "10px" }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          // variant="soft"
+                          onClick={() => {
+                            setOpenDeleteDialog(true);
+                            setDeleteId(item.id);
+                          }}
+                          size="small"
+                          style={{ borderRadius: "16px" }}
+                        >
+                          <RemoveCircleIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </Sheet>
+          <Dialog open={openDeleteDialog}>
+            <DialogTitle>Delete Staff</DialogTitle>
+            <DialogContent>Are you sure you want to delete this staff?</DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => {
+                  handleDelete(deleteId);
+                  setOpenDeleteDialog(false);
+                }}
+              >
+                Delete
+              </Button>
+              <Button onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
+            </DialogActions>
+          </Dialog>
           <UpdateStaffForm
             open={updateDialogOpen}
             onClose={() => setUpdateDialogOpen(false)}
             onSubmit={handleUpdate}
             staffData={selectedStaff!}
           />
-        </div>
+        </main>
       </div>
     </div>
+  </div>  
   );
 };
 

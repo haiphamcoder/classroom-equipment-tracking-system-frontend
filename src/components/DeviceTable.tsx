@@ -30,7 +30,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
 import UpdateDevicesMenu from './UpdateDeviceMenu';
-import { Search } from '@mui/icons-material';
+
 
 function labelDisplayedRows({
   from,

@@ -19,12 +19,12 @@ type Props = { children: React.ReactNode };
 const UserContext = createContext<UserContextType>({} as UserContextType);
 
 export const UserProvider = ({ children }: Props) => {
-  const getBaseUrl = () => {
-    if (import.meta.env.DEV) {
-      return '/api' // Uses Vite proxy in development
-    }
-    return import.meta.env.VITE_API_BACKEND_URL // Uses direct URL in production
-  }
+  // const getBaseUrl = () => {
+  //   if (import.meta.env.DEV) {
+  //     return '/api' 
+  //   }
+  //   return import.meta.env.VITE_API_BACKEND_URL 
+  // }
   const [isReady, setIsReady] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [alert, setAlert] = useState<{ type: string; message: string } | null>(null);
@@ -41,9 +41,7 @@ export const UserProvider = ({ children }: Props) => {
 
   const login = async (data: LoginParams) => {
     try {
-      //       // Send login request to the API
-      //       const baseUrl = getBaseUrl();
-      //       const response = await axios.post(`${baseUrl}/staff/login`, data);
+   
       const response = await axios.post("/api/staff/login", data);
       if (response.status === 200) {
         const userData = response.data;
