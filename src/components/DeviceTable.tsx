@@ -22,14 +22,15 @@ import BrokenImageIcon from '@mui/icons-material/BrokenImage';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import ReportIcon from '@mui/icons-material/Help';
 import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import Input from '@mui/joy/Input';
+import SearchIcon from '@mui/icons-material/Search';
 import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
 import UpdateDevicesMenu from './UpdateDeviceMenu';
+import { Search } from '@mui/icons-material';
 
 function labelDisplayedRows({
   from,
@@ -261,12 +262,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           fontSize='1rem'
           lineHeight='1.5'
         >
-          {`${statusCounts.AVAILABLE} Available, 
-        ${statusCounts.UNAVAILABLE} Unavailable, 
-        ${statusCounts.BORROWED} Borrowed, 
-        ${statusCounts.DAMAGED} Damaged, 
-        ${statusCounts.NORMAL} Normal, 
-        ${statusCounts.LOST} Lost`}
+          O selected
         </Typography>
       )}
       {numSelected > 0 ? (
@@ -282,23 +278,6 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     </Box >
   );
 }
-const statusCounts: any = {
-  AVAILABLE: 0,
-  UNAVAILABLE: 0,
-  BORROWED: 0,
-  DAMAGED: 0,
-  NORMAL: 0,
-  LOST: 0,
-};
-function calculate() {
-  list_response.forEach((item: any) => {
-    if (statusCounts[item.status] !== undefined) {
-      statusCounts[item.status] += 1;
-    }
-  });
-  return statusCounts;
-}
-
 export var list_response: any = [];
 export var total_rows = 0;
 export default function TableSortAndSelection() {
@@ -482,13 +461,13 @@ export default function TableSortAndSelection() {
         style={{ width: 500, marginTop: '30px', marginLeft: '50px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '40px', backgroundColor: 'transparent' }}
       >Devices</header>
       <Input
+        startDecorator={<SearchIcon />}
         placeholder='Search'
         variant='outlined'
         value={searchTerm}
         onChange={handleSearch}
-        style={{ width: 500, top: 20, marginLeft: '50px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px', border: '1px solid #ccc', backgroundColor: 'transparent' }}
+        style={{ width: 800, top: 20, marginLeft: '50px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px', border: '1px solid #ccc', backgroundColor: 'transparent' }}
       />
-
       <Sheet variant="outlined"
         sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '10px', top: { xs: '10%', md: '50px' }, left: '50px', backgroundColor: 'whitesmoke' }
         }

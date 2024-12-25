@@ -17,10 +17,17 @@ import Option from '@mui/joy/Option';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import DoneIcon from '@mui/icons-material/Done';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { visuallyHidden } from '@mui/utils';
-import { Button, TextField } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import Input from '@mui/joy/Input';
+import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
 import UpdateTicketForm from './UpdateTicketMenu';
 
@@ -169,19 +176,10 @@ function EnhancedTableHead(props: EnhancedTableProps) {
                 textColor={active ? 'primary.plainColor' : undefined}
                 component="button"
                 onClick={createSortHandler(headCell.id)}
-                startDecorator={
-                  headCell.numeric ? (
-                    <ArrowDownwardIcon
-                      sx={[active ? { opacity: 1 } : { opacity: 0 }]}
-                    />
-                  ) : null
-                }
                 endDecorator={
-                  !headCell.numeric ? (
-                    <ArrowDownwardIcon
-                      sx={[active ? { opacity: 1 } : { opacity: 0 }]}
-                    />
-                  ) : null
+                  <ArrowDownwardIcon
+                    sx={[active ? { opacity: 1 } : { opacity: 0 }]}
+                  />
                 }
                 sx={{
                   fontWeight: 'lg',
@@ -224,10 +222,19 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           pr: { xs: 1, sm: 1 },
           borderTopLeftRadius: 'var(--unstable_actionRadius)',
           borderTopRightRadius: 'var(--unstable_actionRadius)',
-          backgroundColor: 'lightgray'
+          borderBottom: '1px solid #ddd',
+          backgroundColor: '#dde7ee',
         },
         numSelected > 0 && {
-          bgcolor: 'background.level1',
+          display: 'flex',
+          alignItems: 'center',
+          py: 1,
+          pl: { sm: 2 },
+          pr: { xs: 1, sm: 1 },
+          borderTopLeftRadius: 'var(--unstable_actionRadius)',
+          borderTopRightRadius: 'var(--unstable_actionRadius)',
+          borderBottom: '1px solid #ddd',
+          backgroundColor: '#dde7ee',
         },
       ]}
     >
@@ -241,8 +248,12 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           sx={{ flex: '1 1 100%' }}
           id="tableTitle"
           component="div"
+          fontFamily={"Inter"}
+          fontWeight={600}
+          fontSize='1rem'
+          lineHeight='1.5'
         >
-          Tickets
+          0 selected
         </Typography>
       )}
       {numSelected > 0 ? (
@@ -252,11 +263,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           </IconButton>
         </Tooltip>
       ) : (
-        <Tooltip title="Filter list">
-          <IconButton size="sm" variant="outlined" color="neutral">
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
+        <IconButton size="sm">
+        </IconButton>
       )}
     </Box>
   );
@@ -311,18 +319,18 @@ export default function TableSortAndSelection() {
   }, []);
   const rows = filteredTicket;
 
-  const handleDelete = async (id: number) => {
-    console.log("Deleting item with ID:", id); // Check if this is logged when clicking Delete button
+  const handleDelete = async (ids: number[]) => {
+    console.log("Deleting item with ID:", ids); // Check if this is logged when clicking Delete button
     if (!window.confirm("Are you sure you want to delete this device?")) {
       return;
     }
 
     try {
       // Send a POST request to delete the item
-      await axios.post(`/api/order/cancel/${id}`);
-      setTicket(ticket.filter((item) => item.id !== id)); // Remove item from the state
-      setFilterTicket(filteredTicket.filter((item) => item.id !== id));
-      console.log(`Device with ID ${id} deleted successfully.`);
+      await axios.post("/api/order/cancel/", { ids });
+      setTicket(ticket.filter((item) => !ids.at(item.id))); // Remove item from the state
+      setFilterTicket(filteredTicket.filter((item) => !ids.at(item.id)));
+      console.log(`Device with ID ${ids.join(", ")} deleted successfully.`);
     } catch (error) {
       console.error("Error deleting device:", error);
       alert("An error occurred while deleting the device. Please try again.");
@@ -395,6 +403,21 @@ export default function TableSortAndSelection() {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+
+  const getStatusInfo = (status: any) => {
+    switch (status) {
+      case 'RETURNED':
+        return { icon: <DoneIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#d4f8c4' };
+      case 'BORROWED':
+        return { icon: <HourglassEmptyIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#f8e084' };
+      case 'OVERDUE':
+        return { icon: <WatchLaterIcon sx={{ fontSize: 10 }} />, bgColor: '#F8AE3F' };
+      case 'CANCEL':
+        return { icon: <CancelIcon sx={{ fontSize: 10 }} />, bgColor: '#F5B5B5' };
+      default:
+        return { icon: null, bgColor: '#f9f9f9' }; // Default
+    }
+  };
   const handleRequestSort = (
     _event: React.MouseEvent<unknown>,
     property: keyof Ticket,
@@ -449,190 +472,211 @@ export default function TableSortAndSelection() {
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+
   return (
-    <Sheet variant="outlined"
-      sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '16px', top: { xs: '10%', md: '10px' }, left: '50px', backgroundColor: 'whitesmoke' }
-      }
-    >
-      <EnhancedTableToolbar numSelected={selected.length} />
-      <TextField
-        label="Search by name"
-        variant="outlined"
+    <main className='ticket_main'>
+      <header className='TicketHeader'
+        style={{ width: 500, marginTop: '30px', marginLeft: '50px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '40px', backgroundColor: 'transparent' }}
+      >Tickets</header>
+      <Input
+        startDecorator={<SearchIcon />}
+        placeholder='Search'
+        variant='outlined'
         value={searchTerm}
         onChange={handleSearch}
-        fullWidth
-        margin="normal"
+        style={{ width: 800, top: 20, marginLeft: '50px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px', border: '1px solid #ccc', backgroundColor: 'transparent' }}
       />
-      <Table
-        aria-labelledby="tableTitle"
-        hoverRow
-        sx={{
-          '--TableCell-headBackground': 'transparent',
-          '--TableCell-selectedBackground': (theme) =>
-            theme.vars.palette.success.softBg,
-          '& thead th:nth-child(1)': {
-            width: '30px',
-          },
-          '& thead th:nth-child(2)': {
-            width: 'flex',
-          },
-          '& tr > *:nth-child(n+3)': { textAlign: 'center' },
-        }}
+      <Sheet variant="outlined"
+        sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '10px', top: { xs: '10%', md: '50px' }, left: '50px', backgroundColor: 'whitesmoke' }
+        }
       >
-        <EnhancedTableHead
-          numSelected={selected.length}
-          order={order}
-          orderBy={orderBy}
-          onSelectAllClick={handleSelectAllClick}
-          onRequestSort={handleRequestSort}
-          rowCount={rows.length}
-        />
-        <tbody>
-          {[...rows]
-            .sort(getComparator(order, orderBy))
-            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-            .map((row, index) => {
-              const isItemSelected = selected.includes(row.id.toString());
-              const labelId = `enhanced-table-checkbox-${index}`;
-
-              return (
-                <tr
-                  onClick={(event) => handleClick(event, row.id.toString())}
-                  role="checkbox"
-                  aria-checked={isItemSelected}
-                  tabIndex={-1}
-                  key={row.id}
-                  // selected={isItemSelected}
-                  style={
-                    isItemSelected
-                      ? ({
-                        '--TableCell-dataBackground':
-                          'var(--TableCell-selectedBackground)',
-                        '--TableCell-headBackground':
-                          'var(--TableCell-selectedBackground)',
-                      } as React.CSSProperties)
-                      : {}
-                  }
-                >
-                  <th scope="row">
-                    <Checkbox
-                      checked={isItemSelected}
-                      slotProps={{
-                        input: {
-                          'aria-labelledby': labelId,
-                        },
-                      }}
-                      sx={{ verticalAlign: 'top' }}
-                    />
-                  </th>
-                  <th id={labelId} scope="row">
-                    {row.id}
-                  </th>
-                  <td>{row.borrowerName}</td>
-                  <td>{row.staffName}</td>
-                  <td>{formatTime(row.borrowTime)}</td>
-                  <td>{formatTime(row.returnDeadline)}</td>
-                  <td>{row.status}</td>
-                  <td>{formatItems(row.items)}</td>
-                  <td>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      onClick={(_e) => {
-                        setDialogOpen(true)
-                        openUpdateForm(row);
-                      }}
-                    >
-                      Edit
-                    </Button>
-                    <UpdateTicketForm
-                      open={updateDialogOpen}
-                      onClose={() => setUpdateDialogOpen(false)}
-                      onSubmit={handleUpdate}
-                      ticketData={selectedTicket} />
-                    <Button
-                      variant="contained"
-                      color="error"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(row.id);
-                      }}
-                    >
-                      Delete
-                    </Button></td>
-                </tr>
-              );
-            })}
-          {emptyRows > 0 && (
-            <tr
-              style={
-                {
-                  height: `calc(${emptyRows} * 40px)`,
-                  '--TableRow-hoverBackground': 'transparent',
-                } as React.CSSProperties
-              }
-            >
-              <td colSpan={9} aria-hidden />
-            </tr>
-          )}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colSpan={9}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  justifyContent: 'flex-end',
-                }}
-              >
-                <FormControl orientation="horizontal" size="sm">
-                  <FormLabel>Rows per page:</FormLabel>
-                  <Select onChange={handleChangeRowsPerPage} value={rowsPerPage}>
-                    <Option value={5}>5</Option>
-                    <Option value={10}>10</Option>
-                    <Option value={25}>25</Option>
-                  </Select>
-                </FormControl>
-                <Typography sx={{ textAlign: 'center', minWidth: 80 }}>
-                  {labelDisplayedRows({
-                    from: rows.length === 0 ? 0 : page * rowsPerPage + 1,
-                    to: getLabelDisplayedRowsTo(),
-                    count: rows.length === -1 ? -1 : rows.length,
-                  })}
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <IconButton
-                    size="sm"
-                    color="neutral"
-                    variant="outlined"
-                    disabled={page === 0}
-                    onClick={() => handleChangePage(page - 1)}
-                    sx={{ bgcolor: 'background.surface' }}
-                  >
-                    <KeyboardArrowLeftIcon />
-                  </IconButton>
-                  <IconButton
-                    size="sm"
-                    color="neutral"
-                    variant="outlined"
-                    disabled={
-                      rows.length !== -1
-                        ? page >= Math.ceil(rows.length / rowsPerPage) - 1
-                        : false
+        <EnhancedTableToolbar numSelected={selected.length} />
+        <Table
+          aria-labelledby="tableTitle"
+          hoverRow
+          sx={{
+            '--TableCell-headBackground': 'transparent',
+            '--TableCell-selectedBackground': (theme) =>
+              theme.vars.palette.success.softBg,
+            '& thead th:nth-child(1)': {
+              width: '30px',
+            },
+            '& thead th:nth-child(2)': {
+              width: 'flex',
+            },
+            '& tr > *:nth-child(n+3)': { textAlign: 'start' },
+          }}
+        >
+          <EnhancedTableHead
+            numSelected={selected.length}
+            order={order}
+            orderBy={orderBy}
+            onSelectAllClick={handleSelectAllClick}
+            onRequestSort={handleRequestSort}
+            rowCount={rows.length}
+          />
+          <tbody>
+            {[...rows]
+              .sort(getComparator(order, orderBy))
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((row, index) => {
+                const isItemSelected = selected.includes(row.id as any);
+                const labelId = `enhanced-table-checkbox-${index}`;
+                const { icon, bgColor } = getStatusInfo(row.status);
+                return (
+                  <tr
+                    onClick={(event) => handleClick(event, row.id as any)}
+                    role="checkbox"
+                    aria-checked={isItemSelected}
+                    tabIndex={-1}
+                    key={row.id}
+                    // selected={isItemSelected}
+                    style={
+                      isItemSelected
+                        ? ({
+                          backgroundColor: '#dde7ee',
+                        } as React.CSSProperties)
+                        : {}
                     }
-                    onClick={() => handleChangePage(page + 1)}
-                    sx={{ bgcolor: 'background.surface' }}
                   >
-                    <KeyboardArrowRightIcon />
-                  </IconButton>
+                    <th scope="row">
+                      <Checkbox
+                        checked={isItemSelected}
+                        slotProps={{
+                          input: {
+                            'aria-labelledby': labelId,
+                          },
+                        }}
+                        sx={{ verticalAlign: 'top' }}
+                      />
+                    </th>
+                    <th id={labelId} scope="row" style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>
+                      {row.id}
+                    </th>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.borrowerName}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.staffName}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatTime(row.borrowTime)}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatTime(row.returnDeadline)}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>
+                      <div style={{
+                        display: 'inline',
+                        alignItems: 'center',
+                        padding: '5px 10px',
+                        border: '1px solid #ccc',
+                        borderRadius: '20px',
+                        backgroundColor: bgColor,
+                        borderColor: 'transparent'
+                      }}>
+                        {icon && <span style={{ marginRight: '5px' }}>{icon}</span>}
+                        {row.status}
+                      </div>
+                    </td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatItems(row.items)}</td>
+                    <td>
+                      <IconButton
+                        variant="soft"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDialogOpen(true)
+                          openUpdateForm(row);
+                        }}
+                        size='sm'
+                        style={{ borderRadius: '16px' }}
+                      >
+                        <EditIcon style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '20px', alignItems: 'start' }}
+                        />
+                      </IconButton>
+                      <UpdateTicketForm
+                        open={updateDialogOpen}
+                        onClose={() => setUpdateDialogOpen(false)}
+                        onSubmit={handleUpdate}
+                        ticketData={selectedTicket} />
+                      <IconButton
+                        variant="soft"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete([row.id]);
+                        }}
+                        size='sm'
+                        style={{ borderRadius: '16px' }}
+                      >
+                        <RemoveCircleIcon style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '20px', alignItems: 'start' }}
+                        />
+                      </IconButton></td>
+                  </tr>
+                );
+              })}
+            {emptyRows > 0 && (
+              <tr
+                style={
+                  {
+                    height: `calc(${emptyRows} * 40px)`,
+                    '--TableRow-hoverBackground': 'transparent',
+                  } as React.CSSProperties
+                }
+              >
+                <td colSpan={8} aria-hidden />
+              </tr>
+            )}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={9}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    justifyContent: 'flex-end',
+                  }}
+                >
+                  <FormControl orientation="horizontal" size="sm">
+                    <FormLabel>Rows per page:</FormLabel>
+                    <Select onChange={handleChangeRowsPerPage} value={rowsPerPage}>
+                      <Option value={5}>5</Option>
+                      <Option value={10}>10</Option>
+                      <Option value={25}>25</Option>
+                    </Select>
+                  </FormControl>
+                  <Typography sx={{ textAlign: 'center', minWidth: 80 }}>
+                    {labelDisplayedRows({
+                      from: rows.length === 0 ? 0 : page * rowsPerPage + 1,
+                      to: getLabelDisplayedRowsTo(),
+                      count: rows.length === -1 ? -1 : rows.length,
+                    })}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <IconButton
+                      size="sm"
+                      color="neutral"
+                      variant="outlined"
+                      disabled={page === 0}
+                      onClick={() => handleChangePage(page - 1)}
+                      sx={{ bgcolor: 'background.surface' }}
+                    >
+                      <KeyboardArrowLeftIcon />
+                    </IconButton>
+                    <IconButton
+                      size="sm"
+                      color="neutral"
+                      variant="outlined"
+                      disabled={
+                        rows.length !== -1
+                          ? page >= Math.ceil(rows.length / rowsPerPage) - 1
+                          : false
+                      }
+                      onClick={() => handleChangePage(page + 1)}
+                      sx={{ bgcolor: 'background.surface' }}
+                    >
+                      <KeyboardArrowRightIcon />
+                    </IconButton>
+                  </Box>
                 </Box>
-              </Box>
-            </td>
-          </tr>
-        </tfoot>
-      </Table>
-    </Sheet >
+              </td>
+            </tr>
+          </tfoot>
+        </Table>
+      </Sheet>
+    </main>
   );
 }

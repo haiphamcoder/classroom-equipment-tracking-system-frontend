@@ -7,6 +7,8 @@ import Textarea from '@mui/joy/Textarea';
 import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
 import FormLabel from '@mui/joy/FormLabel';
+import FormHelperText from '@mui/joy/FormHelperText';
+import FormControl from '@mui/joy/FormControl';
 
 
 interface UpdateDeviceFormProps {
@@ -86,47 +88,53 @@ const UpdateDeviceForm = ({
         autoComplete="off"
       >
         <div className="header" style={{ fontFamily: 'Inter, serif', fontWeight: '500', fontSize: '20px', borderBottom: '1px solid #ddd' }}>Update Device</div>
-        <FormLabel htmlFor="Devices" sx={{}}>Devices</FormLabel>
-        <Select
-          value={formData.name}
-          onChange={(_event, newValue) => handleChange({ target: { name: 'name', value: newValue || '' } })}
-          sx={{
-            width: '100%',
-            fontFamily: 'Inter, serif',
-            fontWeight: '450',
-            fontSize: '14px',
-            '& .MuiSelect-select': {
-              border: '1px solid #D3D3D3',
-              boxShadow: 'none',
-            },
-          }}
-          placeholder="Device Name"
-        >
-          {list_response.map((device: any) => (
-            <Option key={device.name} value={device.name} sx={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }}>
-              {device.name}
-            </Option>
-          ))}
-        </Select>
-        <FormLabel htmlFor="quantity" sx={{}}>Quantity</FormLabel>
-        <Textarea
-          name="quantity"
-          value={formData.quantity}
-          onChange={handleChangeQuantity}
-          sx={{
-            "& input[type=number]": {
-              MozAppearance: "textfield", // Remove spin buttons in Firefox
-            },
-            "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
-            {
-              WebkitAppearance: "none", // Remove spin buttons in Chrome, Edge, and Safari
-              margin: 0,
-            },
-            fontFamily: 'Inter, serif',
-            fontWeight: '450',
-            fontSize: '14px',
-          }}
-        />
+        <FormControl>
+          <FormLabel htmlFor="Devices" sx={{}}>Devices</FormLabel>
+          <Select
+            value={formData.name}
+            onChange={(_event, newValue) => handleChange({ target: { name: 'name', value: newValue || '' } })}
+            sx={{
+              width: '100%',
+              fontFamily: 'Inter, serif',
+              fontWeight: '450',
+              fontSize: '14px',
+              '& .MuiSelect-select': {
+                border: '1px solid #D3D3D3',
+                boxShadow: 'none',
+              },
+            }}
+            placeholder="Device Name"
+          >
+            {list_response.map((device: any) => (
+              <Option key={device.name} value={device.name} sx={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }}>
+                {device.name}
+              </Option>
+            ))}
+          </Select>
+          <FormHelperText>sửa tên thiết bị</FormHelperText>
+        </FormControl>
+        <FormControl>
+          <FormLabel htmlFor="quantity" sx={{}}>Quantity</FormLabel>
+          <Textarea
+            name="quantity"
+            value={formData.quantity}
+            onChange={handleChangeQuantity}
+            sx={{
+              "& input[type=number]": {
+                MozAppearance: "textfield", // Remove spin buttons in Firefox
+              },
+              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
+              {
+                WebkitAppearance: "none", // Remove spin buttons in Chrome, Edge, and Safari
+                margin: 0,
+              },
+              fontFamily: 'Inter, serif',
+              fontWeight: '450',
+              fontSize: '14px',
+            }}
+          />
+          <FormHelperText>sửa số lượng.</FormHelperText>
+        </FormControl>
         <FormLabel htmlFor="Status" sx={{}}>Status</FormLabel>
         <TextField
           fullWidth
