@@ -17,7 +17,7 @@ type UserContextType = {
 
 type Props = { children: React.ReactNode };
 const UserContext = createContext<UserContextType>({} as UserContextType);
-
+export var staff_id: number = 0;
 export const UserProvider = ({ children }: Props) => {
   // const getBaseUrl = () => {
   //   if (import.meta.env.DEV) {
@@ -49,6 +49,8 @@ export const UserProvider = ({ children }: Props) => {
         const userData = response.data;
         localStorage.setItem("user", JSON.stringify(userData));
         setToken("token");
+        staff_id = response.data.id;
+        console.log("staff id", staff_id);
         setAlert({ type: "success", message: "Đăng nhập thành công!" });
 
 

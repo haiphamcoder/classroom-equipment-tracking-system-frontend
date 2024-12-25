@@ -61,6 +61,15 @@ const TicketsTable = () => {
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
   };
+  // format Date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   // format items for display
   const formatItems = (items: Items[]) => {
     return items.map(item =>
@@ -84,6 +93,7 @@ const TicketsTable = () => {
 
       const mapped_response = sortedData.map((item: any) => ({
         id: item.id,
+        date: item.borrowTime,
         borrowerName: item.borrowerName,
         staffName: item.staffName,
         borrowTime: item.borrowTime,
@@ -116,6 +126,7 @@ const TicketsTable = () => {
     <Table sx={{ width: '100%', borderRadius: '12px', border: '1px solid #ddd', backgroundColor: '#f5f5f5' }} aria-label="simple table">
       <TableHead>
         <TableRow>
+          <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '14px' }}>Ngay</TableCell>
           <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '14px' }}>borrower name</TableCell>
           <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '14px' }}>staff name</TableCell>
           <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '14px' }}>borrow time</TableCell>
@@ -127,6 +138,7 @@ const TicketsTable = () => {
       <TableBody>
         {[...rows].map((tickets) => (
           <TableRow key={tickets.id}>
+            <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatDate(tickets.date)}</TableCell>
             <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{tickets.borrowerName}</TableCell>
             <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{tickets.staffName}</TableCell>
             <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatTime(tickets.borrowTime)}</TableCell>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import "../styles/TicketsTable.scss";
-import { Ticket, Items, UpdateTicket } from '../data/mockData';
+import { Ticket, Items, UpdateTicket, ReturnOrderRequest } from '../data/mockData';
 import Box from '@mui/joy/Box';
 import Table from '@mui/joy/Table';
 import Typography from '@mui/joy/Typography';
@@ -33,6 +33,8 @@ import axios from 'axios';
 import UpdateTicketForm from './UpdateTicketMenu';
 import TicketExportPopup from './TicketExport';
 import NewTicketsMenu from './NewTicketsMenu';
+import { staff_id } from '../context/useAuth';
+
 
 function labelDisplayedRows({
   from,
@@ -101,6 +103,12 @@ const headCells: readonly HeadCell[] = [
     numeric: true,
     disablePadding: false,
     label: 'ten nhan vien',
+  },
+  {
+    id: 'date',
+    numeric: true,
+    disablePadding: false,
+    label: 'Ngay',
   },
   {
     id: 'borrowTime',
@@ -260,20 +268,62 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           0 selected
         </Typography>
       )}
-      {numSelected > 0 ? (
+      {numSelected > 0 && numSelected < 2 ? (
+        <Tooltip title="Xác nhận trả">
+          <IconButton size="sm" color="success" variant="solid" onClick={() => { returnOrder(currentReturnOrder) }}>
+            <DoneIcon />
+          </IconButton>
+        </Tooltip>
+      ) : (
         <Tooltip title="Xoa">
           <IconButton size="sm" color="danger" variant="solid">
             <DeleteIcon />
           </IconButton>
         </Tooltip>
-      ) : (
-        <IconButton size="sm">
-        </IconButton>
       )}
     </Box>
   );
 }
 
+// mapped borrowOrder to ReturnOrderRequest
+let currentReturnOrder: ReturnOrderRequest | null = null;
+export function createReturnOrderRequest(borrowOrder: Ticket): ReturnOrderRequest {
+  console.log("input param:", borrowOrder);
+  currentReturnOrder = {
+    orderId: borrowOrder.id,
+    staffId: staff_id,
+    items: borrowOrder.items.map((item: any) => ({
+      orderItemId: item.id,
+      returnQuantity: item.quantity,
+      status: item.status,
+      notes: item.notes
+    }))
+  };
+  console.log("current return order", currentReturnOrder);
+  return currentReturnOrder;
+}
+// Function to clear the current ReturnOrderRequest
+export function clearReturnOrderRequest(): void {
+  currentReturnOrder = null;
+  console.log('ReturnOrderRequest has been cleared.');
+}
+async function returnOrder(returnOrderRequest: ReturnOrderRequest | null): Promise<void> {
+  if (!returnOrderRequest) {
+    console.error('No return order to process.');
+    return;
+  }
+  var payload: any;
+  try {
+    const response = await axios.post('/api/order/return', returnOrderRequest);
+    payload = response.data;
+    console.log('Order returned successfully:', response.data);
+    clearReturnOrderRequest();  // Clear after successful post
+  } catch (error) {
+    console.log("test", payload);
+    console.log("Payload", returnOrderRequest)
+    console.error('Failed to return order:', error);
+  }
+}
 export default function TableSortAndSelection() {
   const [ticket, setTicket] = useState<Ticket[]>([]);
   const [filteredTicket, setFilterTicket] = useState<Ticket[]>([]);
@@ -294,12 +344,16 @@ export default function TableSortAndSelection() {
       const mapped_response = response.data.map((item: any) => ({
         id: item.id,
         borrowerName: item.borrowerName,
+        date: item.borrowTime,
         staffName: item.staffName,
         borrowTime: item.borrowTime,
         returnDeadline: item.returnDeadline,
         items: item.items.map((equipment: any) => ({
+          id: equipment.id,
           equipmentName: equipment.equipmentName,
-          quantity: equipment.quantity
+          quantity: equipment.quantity,
+          status: equipment.status,
+          notes: equipment.notes,
         })),
         returnTime: item.returnTime,
         status: item.status,
@@ -307,6 +361,7 @@ export default function TableSortAndSelection() {
           <MoreVertRounded />
         </IconButton>)
       }));
+      console.log("staff_id", staff_id);
       setTicket(mapped_response);
       setFilterTicket(mapped_response);
     } catch (error) {
@@ -404,6 +459,14 @@ export default function TableSortAndSelection() {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
+  };
+  // format Date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   };
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Ticket>('id');
@@ -547,7 +610,11 @@ export default function TableSortAndSelection() {
                 const { icon, bgColor } = getStatusInfo(row.status);
                 return (
                   <tr
-                    onClick={(event) => handleClick(event, row.id as any)}
+                    onClick={(event) => {
+                      handleClick(event, row.id as any);
+                      createReturnOrderRequest(row);
+                      console.log("current selected", currentReturnOrder)
+                    }}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
@@ -577,6 +644,7 @@ export default function TableSortAndSelection() {
                     </th>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.borrowerName}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.staffName}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatDate(row.date)}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatTime(row.borrowTime)}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatTime(row.returnDeadline)}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>
@@ -637,13 +705,13 @@ export default function TableSortAndSelection() {
                   } as React.CSSProperties
                 }
               >
-                <td colSpan={8} aria-hidden />
+                <td colSpan={9} aria-hidden />
               </tr>
             )}
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan={9}>
+              <td colSpan={10}>
                 <Box
                   sx={{
                     display: 'flex',
