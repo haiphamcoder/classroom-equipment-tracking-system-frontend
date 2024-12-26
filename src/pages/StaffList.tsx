@@ -171,16 +171,19 @@ const Staff = () => {
         <Sidebar />
         <div className="homeContainer">
           <main className="listContainer">
-            <header
-              style={{
-                fontSize: "32px",
-                fontWeight: "600",
-                marginBottom: "20px",
-                fontFamily: "Inter, serif",
-              }}
-            >
-              Staff List
-            </header>
+          <header className='StaffHeader'
+            style={{ 
+              width: 500, 
+              marginTop: '30px', 
+              marginLeft: '50px', 
+              fontFamily: 'Inter, serif', 
+              fontWeight: '600', 
+              fontSize: '40px', 
+              backgroundColor: 'transparent' 
+            }}
+          >
+            Staff
+          </header>
             <Box
               sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
             >

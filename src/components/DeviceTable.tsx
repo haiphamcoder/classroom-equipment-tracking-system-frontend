@@ -449,6 +449,17 @@ export default function TableSortAndSelection() {
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+
+  const handleAddDevice = async (newDevice: Device) => {
+    try {
+      const response = await axios.post("/api/equipment/create", newDevice);
+      fetchData(); // Refresh the list after adding
+      setShowNewDevicePopup(false);
+    } catch (error) {
+      console.error("Error creating device:", error);
+    }
+  };
+
   return (
     <main className='device_main' style={{ marginLeft: '250px' }}>
       <header className='DeviceHeader'
@@ -478,7 +489,7 @@ export default function TableSortAndSelection() {
           }}
         />
         <Button 
-          onClick={() => { setShowNewDevicePopup(true) }}
+          onClick={() => setShowNewDevicePopup(true)}
           sx={{
             borderRadius: '10px',
             fontFamily: 'Inter, serif',
@@ -488,6 +499,11 @@ export default function TableSortAndSelection() {
         >
           New Device
         </Button>
+        <NewDevicesMenu
+          open={showNewDevicePopup}
+          onClose={() => setShowNewDevicePopup(false)}
+          onSubmit={handleAddDevice}
+        />
         <Button 
           startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />}
           onClick={downloadExcelFile}
