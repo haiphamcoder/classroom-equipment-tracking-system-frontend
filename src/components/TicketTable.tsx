@@ -33,7 +33,6 @@ import axios from 'axios';
 import UpdateTicketForm from './UpdateTicketMenu';
 import TicketExportPopup from './TicketExport';
 import NewTicketsMenu from './NewTicketsMenu';
-import { staff_id } from '../context/useAuth';
 
 
 function labelDisplayedRows({
@@ -284,14 +283,17 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     </Box>
   );
 }
+const userString = localStorage.getItem('user');
+const user = userString ? JSON.parse(userString) : null;  // Check for null before parsing
 
+const staffId = user.id;
 // mapped borrowOrder to ReturnOrderRequest
 let currentReturnOrder: ReturnOrderRequest | null = null;
 export function createReturnOrderRequest(borrowOrder: Ticket): ReturnOrderRequest {
   console.log("input param:", borrowOrder);
   currentReturnOrder = {
     orderId: borrowOrder.id,
-    staffId: staff_id,
+    staffId: staffId,
     items: borrowOrder.items.map((item: any) => ({
       orderItemId: item.id,
       returnQuantity: item.quantity,
@@ -361,7 +363,7 @@ export default function TableSortAndSelection() {
           <MoreVertRounded />
         </IconButton>)
       }));
-      console.log("staff_id", staff_id);
+      console.log("staff_id", user.id);
       setTicket(mapped_response);
       setFilterTicket(mapped_response);
     } catch (error) {
@@ -370,7 +372,7 @@ export default function TableSortAndSelection() {
   };
 
   useEffect(() => {
-
+    console.log("user", user.id)
     fetchData();
     // Set up periodic refresh
     const intervalId = setInterval(fetchData, 5000); // Refresh every 30 seconds

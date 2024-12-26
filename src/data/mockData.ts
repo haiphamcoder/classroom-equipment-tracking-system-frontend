@@ -35,6 +35,7 @@ export interface NewTicket {
 }
 export interface NewTicketItems {
 	equipmentId: number,
+	equipmentName: string,
 	quantity: number,
 	notes: string,
 }

@@ -10,6 +10,7 @@ import {
   List,
   ListItem,
   IconButton,
+  Button,
 } from "@mui/material";
 import { Remove, Add } from "@mui/icons-material";
 import axios from "axios";
@@ -19,7 +20,12 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
-import { staff_id } from "../context/useAuth";
+
+const userString = localStorage.getItem('user');
+const user = userString ? JSON.parse(userString) : null;  // Check for null before parsing
+
+const staffId = user.id;
+
 
 const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const [loading, setLoading] = useState(false);
@@ -53,11 +59,24 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
 
   }, []);
 
-  // Handle adding a new row
+  const fetchEquipmentData = async (id: string): Promise<string | null> => {
+    try {
+      const response = await axios.post("/api/equipment/get", { id });
+
+      // Assuming the response returns a single item or you want to get the name of the first item
+      const name = response.data?.[0]?.name ?? null;
+
+      return name;
+
+    } catch (error) {
+      console.error("Error fetching equipment data:", error);
+      return null;
+    }
+  };  // Handle adding a new row
   const handleAddRow = () => {
     setFormData((prev) => ({
       ...prev,
-      items: [...prev.items, { equipmentId: 0, quantity: 0, notes: "" }],
+      items: [...prev.items, { equipmentId: 0, equipmentName: "", quantity: 0, notes: "" }],
     }));
   };
 
@@ -206,8 +225,8 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
       modal
       nested
     >
-      <Box className="modal" component="form" sx={{ display: "flex", flexWrap: "wrap", marginLeft: '250px' }} noValidate autoComplete="off">
-        <div className="header">Add devices</div>
+      <Box className="modal" component="form" sx={{ display: "flex", flexDirection: "column", gap: 3, p: 2, borderRadius: '10px', backgroundColor: '#fbfcfe', marginLeft: '100px' }} noValidate autoComplete="off">
+        <div className="header" style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '20px' }}>Add Tickets</div>
         <div className="content">
           {/* Borrower ID */}
           <TextField
@@ -226,7 +245,7 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
             aria-readonly
             id="staffId"
             label="Id nhan vien"
-            value={formData.staffId}
+            value={staffId}
             onChange={(e) => handleFormChange("staffId", Number(e.target.value))}
             margin="normal"
             variant="outlined"
@@ -292,9 +311,10 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
             overflowY: 'auto',
             border: '1px solid #ddd',
             padding: '10px',
+            margin: '10px'
           }}>
             {formData.items.map((item, index) => (
-              <ListItem key={index} disableGutters>
+              <ListItem key={index} disableGutters sx={{ gap: 2 }}>
                 <Autocomplete
                   fullWidth
                   options={equipmentOptions}
@@ -329,14 +349,14 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
             <Add />
           </IconButton>
         </div>
-        <div className="actions">
-          <button className="savebutton" type="button" onClick={handleSave} disabled={loading}>
+        <Box className="actions" sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+          <Button className="savebutton" variant='contained' onClick={handleSave} disabled={loading}>
             {loading ? "Saving..." : "SAVE"}
-          </button>
-          <button className="exitbutton" type="button" onClick={exit}>
+          </Button>
+          <Button className="exitbutton" variant='contained' color='error' onClick={exit}>
             Exit
-          </button>
-        </div>
+          </Button>
+        </Box>
       </Box>
     </Popup>
   );

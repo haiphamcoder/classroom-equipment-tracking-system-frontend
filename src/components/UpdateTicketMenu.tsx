@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Popup from "reactjs-popup";
 import { Box, Button } from "@mui/material";
@@ -78,7 +77,9 @@ const UpdateTicketForm = ({
       console.log('Updated Ticket id:', formData.orderId); // To see the updated object in the console
       console.log('Updated Ticket new deadline:', formData.newDeadline); // To see the updated object in the console
     }
-  }; if (!ticketData) return null;
+  };
+
+  if (!ticketData) return null;
   return (
     <Popup open={open} modal nested onClose={onClose}>
       <Box
@@ -88,7 +89,7 @@ const UpdateTicketForm = ({
         noValidate
         autoComplete="off"
       >
-        <div className="header">Update Ticket</div>
+        <div className="header">Extend Deadline</div>
 
         {/*<TextField
           fullWidth
@@ -115,7 +116,7 @@ const UpdateTicketForm = ({
           <Button onClick={handleSave} variant="contained" color="primary">
             Save
           </Button>
-          <Button onClick={onClose} variant="outlined" color="secondary">
+          <Button onClick={onClose} variant="outlined" color="error">
             Exit
           </Button>
         </Box>
