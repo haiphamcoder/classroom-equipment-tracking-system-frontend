@@ -14,11 +14,18 @@ import {
   TableHead,
   TableRow,
   TextField,
+  IconButton,
+  Box,
 } from "@mui/material";
 import Sidebar from "../components/Sidebar";
 import RegisterForm from "../components/RegisterForm";
 import UpdateStaffForm from "../components/UpdateStaffForm";
 import CustomAlert from "../components/CustomAlert";
+import Input from '@mui/joy/Input';
+import SearchIcon from '@mui/icons-material/Search';
+import EditIcon from '@mui/icons-material/Edit';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 export type Staff = {
   id: string | "";
@@ -121,6 +128,7 @@ const Staff = () => {
       const response = await axios.post("/api/staff/create", newStaff);
       setStaff([...staff, response.data]);
       setFilteredStaff([...filteredStaff, response.data]);
+      setDialogOpen(false);
       showAlert(
         "success",
         "Add Success",
@@ -159,46 +167,75 @@ const Staff = () => {
       <div className="dashboard">
         <Sidebar />
         <div className="homeContainer">
-          <div className="widgets"></div>
+          <header className='StaffHeader'
+            style={{ 
+              width: 500, 
+              marginTop: '30px', 
+              marginLeft: '50px', 
+              fontFamily: 'Inter, serif', 
+              fontWeight: '600', 
+              fontSize: '40px', 
+              backgroundColor: 'transparent' 
+            }}
+          >
+            Staff
+          </header>
+
           <div className="listContainer">
-            <Button variant="contained" onClick={() => setDialogOpen(true)}>
-              Add new staff
-            </Button>
-            <RegisterForm
-              open={dialogOpen}
-              onClose={handleClose}
-              onSubmit={handleAddStaff}
-            />
-            <TextField
-              label="Search by name"
-              variant="outlined"
-              value={searchTerm}
-              onChange={handleSearch}
-              fullWidth
-              margin="normal"
-            />
-            <Dialog open={openDeleteDialog}>
-              <DialogTitle>Xoa nhan vien</DialogTitle>
-              <DialogContent>
-                Ban co chac chan muon xoa nhan vien nay khong?
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  onClick={() => {
-                    handleDelete(deleteId);
-                    setOpenDeleteDialog(false);
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              margin: '10px 0 30px 0'
+            }}>
+              <Input
+                className="search-input"
+                startDecorator={<SearchIcon />}
+                placeholder='Search'
+                variant='outlined'
+                value={searchTerm}
+                onChange={handleSearch}
+                style={{ 
+                  width: 800, 
+                  borderRadius: '10px', 
+                  fontFamily: 'Inter, serif', 
+                  fontWeight: '450', 
+                  fontSize: '14px', 
+                  backgroundColor: 'transparent' 
+                }}
+              />
+              <Box sx={{ display: 'flex', gap: 1, marginLeft: 2 }}>
+                <Button 
+                  onClick={() => setDialogOpen(true)}
+                  sx={{
+                    borderRadius: '10px',
+                    fontFamily: 'Inter, serif',
+                    fontWeight: '450',
+                    fontSize: '14px',
+                    backgroundColor: '#0B7EEE',
+                    color: 'white',
+                    textTransform: 'none',
+                    px: 2,
+                    '&:hover': {
+                      backgroundColor: '#0966c2'
+                    }
                   }}
                 >
-                  Xoa
+                  New Staff
                 </Button>
-                <Button onClick={() => setOpenDeleteDialog(false)}>Huy</Button>
-              </DialogActions>
-            </Dialog>
+              </Box>
+            </Box>
+
             <TableContainer component={Paper} className="table">
-              <Table sx={{ minWidth: 650 }} aria-label="staff table">
+              <Table sx={{ 
+                minWidth: 650,
+                '& thead th:first-of-type, & tbody td:first-of-type': {
+                  width: '50px',  
+                  padding: '8px', 
+                }
+              }} aria-label="staff table">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Staff ID</TableCell>
+                    <TableCell>No.</TableCell>
                     <TableCell>Name</TableCell>
                     <TableCell>Email</TableCell>
                     <TableCell>Phone</TableCell>
@@ -207,35 +244,37 @@ const Staff = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredStaff.map((item) => {
+                  {filteredStaff.map((item, index) => {
                     if (item.admin === true) {
                       return null;
                     } else {
                       return (
                         <TableRow key={item.id}>
-                          <TableCell>{item.id}</TableCell>
+                          <TableCell>{index}</TableCell>
                           <TableCell>{item.name}</TableCell>
                           <TableCell>{item.email}</TableCell>
                           <TableCell>{item.phone}</TableCell>
                           <TableCell>{item.buildingId?.buildingName}</TableCell>
                           <TableCell>
-                            <Button
-                              variant="contained"
-                              color="primary"
+                            <IconButton
+                              variant="soft"
                               onClick={() => openUpdateForm(item)}
+                              size='sm'
+                              style={{ borderRadius: '16px' }}
                             >
-                              Update
-                            </Button>
-                            <Button
-                              variant="contained"
-                              color="error"
+                              <EditIcon style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '20px' }} />
+                            </IconButton>
+                            <IconButton
+                              variant="soft"
                               onClick={() => {
                                 setOpenDeleteDialog(true);
                                 setDeleteId(item.id);
                               }}
+                              size='sm'
+                              style={{ borderRadius: '16px' }}
                             >
-                              Delete
-                            </Button>
+                              <RemoveCircleIcon style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '20px' }} />
+                            </IconButton>
                           </TableCell>
                         </TableRow>
                       );
@@ -250,6 +289,11 @@ const Staff = () => {
             onClose={() => setUpdateDialogOpen(false)}
             onSubmit={handleUpdate}
             staffData={selectedStaff!}
+          />
+          <RegisterForm
+            open={dialogOpen}
+            onClose={() => setDialogOpen(false)}
+            onSubmit={handleAddStaff}
           />
         </div>
       </div>

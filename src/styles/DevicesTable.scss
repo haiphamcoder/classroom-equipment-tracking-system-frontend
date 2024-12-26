@@ -1,3 +1,37 @@
 .devicestable {
   background-color: white;
+  width: 95%;
+  margin: 0 auto;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    
+    th, td {
+      text-align: center;
+      vertical-align: middle;
+      padding: 12px 8px;
+    }
+  }
+}
+
+.search-input {
+  input {
+    color: white !important;
+    
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
+  }
+}
+
+.device-sheet {
+  width: calc(100% - 100px) !important;
+  margin: 0 50px !important;
+}
+
+.MuiSelect-select {
+  &[value="5"] {
+    display: none;
+  }
 }

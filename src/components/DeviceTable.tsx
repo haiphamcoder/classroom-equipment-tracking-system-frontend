@@ -95,7 +95,7 @@ const headCells: readonly HeadCell[] = [
     id: 'id',
     numeric: true,
     disablePadding: true,
-    label: 'Id',
+    label: 'No.',
   },
   {
     id: 'name',
@@ -288,7 +288,7 @@ export default function TableSortAndSelection() {
   const [orderBy, setOrderBy] = React.useState<keyof Device>('id');
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [showNewDevicePopup, setShowNewDevicePopup] = useState(false);
 
   const getStatusInfo = (status: any) => {
@@ -454,26 +454,60 @@ export default function TableSortAndSelection() {
       <header className='DeviceHeader'
         style={{ width: 500, marginTop: '30px', marginLeft: '50px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '40px', backgroundColor: 'transparent' }}
       >Devices</header>
-      <Box className='search_and_export' sx={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+      <Box className='search-section' sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: 2,
+        margin: '20px 50px'
+      }}>
         <Input
+          className="search-input"
           startDecorator={<SearchIcon />}
           placeholder='Search'
           variant='outlined'
           value={searchTerm}
           onChange={handleSearch}
-          style={{ width: 800, top: 20, marginLeft: '50px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px', border: '1px solid #ccc', backgroundColor: 'transparent' }}
+          sx={{
+            flex: 1,
+            borderRadius: '10px',
+            fontFamily: 'Inter, serif',
+            fontWeight: '450',
+            fontSize: '14px',
+            border: '1px solid #ccc',
+            backgroundColor: 'transparent',
+          }}
         />
-        <Box sx={{ display: 'flex', gap: 2, marginLeft: '415px' }}>
-          <Button style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowNewDevicePopup(true); console.log("Click") }}
-          >New Device</Button>
-          <NewDevicesMenu open={showNewDevicePopup} onClose={() => setShowNewDevicePopup(false)} />
-          <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={downloadExcelFile}
-          >Export</Button>
-        </Box>
+        <Button 
+          onClick={() => { setShowNewDevicePopup(true) }}
+          sx={{
+            borderRadius: '10px',
+            fontFamily: 'Inter, serif',
+            fontWeight: '450',
+            fontSize: '14px'
+          }}
+        >
+          New Device
+        </Button>
+        <Button 
+          startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />}
+          onClick={downloadExcelFile}
+          sx={{
+            borderRadius: '10px',
+            fontFamily: 'Inter, serif',
+            fontWeight: '450',
+            fontSize: '14px'
+          }}
+        >
+          Export
+        </Button>
       </Box>
-      <Sheet variant="outlined"
-        sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '10px', top: { xs: '10%', md: '50px' }, left: '50px', backgroundColor: 'whitesmoke' }
-        }
+      <Sheet 
+        className="device-sheet"
+        variant="outlined" 
+        sx={{ 
+          borderRadius: '10px',
+          backgroundColor: 'whitesmoke'
+        }}
       >
         <EnhancedTableToolbar numSelected={selected.length} />
         <Table
@@ -505,6 +539,7 @@ export default function TableSortAndSelection() {
               .sort(getComparator(order, orderBy))
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row, index) => {
+                const continuousIndex = page * rowsPerPage + index + 1;
                 const isItemSelected = selected.includes(row.id as any);
                 const labelId = `enhanced-table-checkbox-${index}`;
                 const { icon, bgColor } = getStatusInfo(row.status);
@@ -535,8 +570,12 @@ export default function TableSortAndSelection() {
                         sx={{ verticalAlign: 'top' }}
                       />
                     </th>
-                    <th id={labelId} scope="row" style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>
-                      {row.id}
+                    <th scope="row" style={{ 
+                      fontFamily: 'Inter, serif', 
+                      fontWeight: '450', 
+                      fontSize: '12px' 
+                    }}>
+                      {continuousIndex}
                     </th>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.name}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.roomName}</td>
@@ -617,10 +656,12 @@ export default function TableSortAndSelection() {
                 >
                   <FormControl orientation="horizontal" size="sm">
                     <FormLabel>Rows per page:</FormLabel>
-                    <Select onChange={handleChangeRowsPerPage} value={rowsPerPage}
+                    <Select 
+                      onChange={handleChangeRowsPerPage} 
+                      value={rowsPerPage}
                     >
-                      <Option value={5}>5</Option>
                       <Option value={10}>10</Option>
+                      <Option value={15}>15</Option>
                       <Option value={25}>25</Option>
                     </Select>
                   </FormControl>
@@ -662,7 +703,7 @@ export default function TableSortAndSelection() {
             </tr>
           </tfoot>
         </Table>
-      </Sheet >
+      </Sheet>
     </main>
   );
 }
