@@ -6,29 +6,23 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import "../styles/Table.scss"
 import axios from 'axios';
-import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
 import DoneIcon from '@mui/icons-material/Done';
 import ReportIcon from '@mui/icons-material/Help';
 import Brightness1Icon from '@mui/icons-material/Brightness1';
-import BrokenImageIcon from '@mui/icons-material/BrokenImage';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import { Ticket, Items } from '../data/mockData';
 
 const statusInfoHelper = (status: any) => {
   const getStatusInfo = (status: any) => {
     switch (status) {
-      case 'AVAILABLE':
+      case 'RETURNED':
         return { icon: <DoneIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#d4f8c4' };
-      case 'UNAVAILABLE':
-        return { icon: <DoNotDisturbIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#F87071' };
       case 'BORROWED':
         return { icon: <HourglassEmptyIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#f8e084' };
-      case 'DAMAGED':
-        return { icon: <BrokenImageIcon sx={{ fontSize: 10 }} />, bgColor: '#e5a6a6' };
-      case 'NORMAL':
+      case 'OVERDUE':
+        return { icon: <ReportIcon sx={{ fontSize: 10 }} />, bgColor: '#e5a6a6' };
+      case 'CANCELLED':
         return { icon: <Brightness1Icon sx={{ fontSize: 10 }} />, bgColor: '#f0f0f0' };
-      case 'LOST':
-        return { icon: <ReportIcon sx={{ fontSize: 10 }} />, bgColor: '#e1c2f9' };
       default:
         return { icon: null, bgColor: '#f9f9f9' }; // Default
     }

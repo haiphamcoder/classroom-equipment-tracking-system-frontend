@@ -19,6 +19,7 @@ import { NewTicketItems, NewTicket } from "../data/mockData";
 // import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 // import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 // import dayjs, { Dayjs } from 'dayjs';
+import { staff_id } from "../context/useAuth";
 
 const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const [loading, setLoading] = useState(false);
@@ -149,9 +150,10 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
           {/* Staff ID */}
           <TextField
             fullWidth
+            aria-readonly
             id="staffId"
             label="Id nhan vien"
-            value={formData.staffId}
+            value={staff_id}
             onChange={(e) => handleFormChange("staffId", Number(e.target.value))}
             margin="normal"
             variant="outlined"
