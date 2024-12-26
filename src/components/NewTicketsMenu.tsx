@@ -1,4 +1,4 @@
-
+import * as React from 'react';
 import { useRef, useState, useEffect } from "react";
 import Popup from "reactjs-popup";
 // import ClickableText from "./ClickableText";
@@ -14,11 +14,11 @@ import {
 import { Remove, Add } from "@mui/icons-material";
 import axios from "axios";
 import { NewTicketItems, NewTicket } from "../data/mockData";
-// import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-// import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-// import dayjs, { Dayjs } from 'dayjs';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import dayjs, { Dayjs } from 'dayjs';
 import { staff_id } from "../context/useAuth";
 
 const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
@@ -77,29 +77,100 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
     setFormData((prev) => ({ ...prev, items: updatedItems }));
   };
 
-  const formatDateTimeForInput = (isoString: string) => {
-    const date = new Date(isoString);
-    return date.toISOString().slice(0, 16); // Format: "YYYY-MM-DDThh:mm"
-  };
+  // const formatDateTimeForInput = (isoString: string) => {
+  //   const date = new Date(isoString);
+  //   return date.toISOString().slice(0, 16); // Format: "YYYY-MM-DDThh:mm"
+  // };
 
-  const handleDateTimeChange = (field: "borrowTime" | "returnDeadline", value: string) => {
-    try {
-      const date = new Date(value);
+  // const handleDateTimeChange = (field: "borrowTime" | "returnDeadline", value: string) => {
+  //   try {
+  //     const date = new Date(value);
+  //     if (!isNaN(date.getTime())) {
+  //       setFormData((prev) => ({
+  //         ...prev,
+  //         [field]: date.toISOString(),
+  //       }));
+  //     }
+  //   } catch (error) {
+  //     console.error("Invalid date input:", error);
+  //   }
+  // };
+
+  const [startValue, setStartValue] = React.useState<Dayjs | null>(
+    dayjs().set('date', dayjs().date()).set('month', dayjs().month()).set('year', dayjs().year())
+  );
+  const [endValue, setEndValue] = React.useState<Dayjs | null>(
+    dayjs().set('date', dayjs().date()).set('month', dayjs().month()).set('year', dayjs().year())
+  );
+
+  const handleStartTimeChange = (newValue: Dayjs | null) => {
+    if (newValue) {
+      // Lock the date to the current day and update only the time portion
+      const lockedDate = dayjs().startOf('day'); // Current date with time set to 00:00
+
+      // Update the time based on the new value selected by the user
+      const newDate = lockedDate
+        .set('hour', newValue.hour())
+        .set('minute', newValue.minute())
+        .set('second', newValue.second());
+
+      setStartValue(newDate);
+
+      // Format the date as an ISO string with the local time but mimic the UTC format
+      const formattedDate = newDate.format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z'; // Add Z to indicate UTC
+
+      const date = new Date(formattedDate);
       if (!isNaN(date.getTime())) {
         setFormData((prev) => ({
           ...prev,
-          [field]: date.toISOString(),
+          borrowTime: date.toISOString(),
         }));
-      }
-    } catch (error) {
-      console.error("Invalid date input:", error);
+      }      // Update the newDeadline in the updateTicket
+      // setFormData((prevTicket) => ({
+      //   ...prevTicket,
+      //   borrowTime: formattedDate,
+      // }));
+      //
+      console.log('Updated Ticket id:', formData.borrowTime); // To see the updated object in the console
     }
   };
 
-  const currentDateTime = new Date().toISOString();
+  const handleEndTimeChange = (newValue: Dayjs | null) => {
+    if (newValue) {
+      // Lock the date to the current day and update only the time portion
+      const lockedDate = dayjs().startOf('day'); // Current date with time set to 00:00
+
+      // Update the time based on the new value selected by the user
+      const newDate = lockedDate
+        .set('hour', newValue.hour())
+        .set('minute', newValue.minute())
+        .set('second', newValue.second());
+
+      setEndValue(newDate);
+
+      // Format the date as an ISO string with the local time but mimic the UTC format
+      const formattedDate = newDate.format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z'; // Add Z to indicate UTC
+      const date = new Date(formattedDate);
+      if (!isNaN(date.getTime())) {
+        setFormData((prev) => ({
+          ...prev,
+          returnDeadline: date.toISOString(),
+        }));
+      }
+      // // Update the newDeadline in the updateTicket
+      // setFormData((prevTicket) => ({
+      //   ...prevTicket,
+      //   returnDeadline: formattedDate,
+      // }));
+
+      console.log('Updated Ticket id:', formData.returnDeadline); // To see the updated object in the console
+    }
+  };
+
+
   const ref = useRef<any>(null);
   const exit = () => {
-    setFormData({ borrowerId: 0, staffId: 0, borrowTime: currentDateTime, returnDeadline: currentDateTime, items: [] })
+    setFormData({ borrowerId: 0, staffId: 0, borrowTime: "", returnDeadline: "", items: [] })
     ref.current.close();
   }
 
@@ -107,18 +178,20 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
 
     setLoading(true);
     try {
-      const formattedData = {
-        ...formData,
-        borrowTime: new Date(formData.borrowTime).toISOString(),
-        returnDeadline: new Date(formData.returnDeadline).toISOString(),
-      };
+      // const formattedData = {
+      //   ...formData,
+      // borrowTime: new Date(formData.borrowTime).toISOString(),
+      // returnDeadline: new Date(formData.returnDeadline).toISOString(),
+      // };
 
-      const response = await axios.post("/api/order/create", formattedData);
+      const response = await axios.post("/api/order/create", formData);
       console.log("Ticket created successfully:", response.data);
-      setFormData({ borrowerId: 0, staffId: 0, borrowTime: currentDateTime, returnDeadline: currentDateTime, items: [] })
+      setFormData({ borrowerId: 0, staffId: 0, borrowTime: "", returnDeadline: "", items: [] })
       ref.current.close();
     } catch (error) {
       console.error("Error creating ticket:", error);
+    } finally {
+      setLoading(false);
     }
   };
   const handleFormChange = (field: keyof NewTicket, value: any) => {
@@ -153,14 +226,14 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
             aria-readonly
             id="staffId"
             label="Id nhan vien"
-            value={staff_id}
+            value={formData.staffId}
             onChange={(e) => handleFormChange("staffId", Number(e.target.value))}
             margin="normal"
             variant="outlined"
           />
 
           {/* Borrow Time */}
-          <TextField
+          {/*}<TextField
             fullWidth
             label="Thoi gian muon"
             type="datetime-local"
@@ -174,7 +247,7 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
           />
 
           {/* Return Deadline */}
-          <TextField
+          {/*<TextField
             fullWidth
             label="Thoi gian tra"
             type="datetime-local"
@@ -188,7 +261,29 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
             inputProps={{
               min: formatDateTimeForInput(formData.borrowTime),
             }}
-          />
+          />*/}
+
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DemoContainer components={['DateTimePicker']}>
+              <DateTimePicker
+                label="Thoi gian muon"
+                value={startValue}
+                onChange={handleStartTimeChange}
+                openTo="hours" // Keep picker open to select time
+              />
+            </DemoContainer>
+          </LocalizationProvider>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DemoContainer components={['DateTimePicker']}>
+              <DateTimePicker
+                label="Thoi gian tra"
+                value={endValue}
+                onChange={handleEndTimeChange}
+                openTo="hours" // Keep picker open to select time
+              />
+            </DemoContainer>
+          </LocalizationProvider>
+
 
           {/* Items List */}
           <List sx={{
