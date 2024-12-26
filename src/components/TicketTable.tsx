@@ -381,23 +381,24 @@ export default function TableSortAndSelection() {
   }, []);
   const rows = filteredTicket;
 
-  const handleDelete = async (ids: number[]) => {
-    console.log("Deleting item with ID:", ids); // Check if this is logged when clicking Delete button
-    if (!window.confirm("Are you sure you want to delete this device?")) {
+  const handleDelete = async (ids: any) => {
+    if (ids.length === 0) {
+      console.error("No IDs to delete.");
       return;
     }
 
     try {
-      // Send a POST request to delete the item
-      await axios.post("/api/order/cancel/", { ids });
-      setTicket(ticket.filter((item) => !ids.at(item.id))); // Remove item from the state
-      setFilterTicket(filteredTicket.filter((item) => !ids.at(item.id)));
-      console.log(`Device with ID ${ids.join(", ")} deleted successfully.`);
+      const response = await axios.post("api/order/cancel", ids, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Delete successful:", response.data);
     } catch (error) {
-      console.error("Error deleting device:", error);
-      alert("An error occurred while deleting the device. Please try again.");
+      console.error("Error deleting items:", error);
     }
   };
+
 
   // Search handler
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -563,7 +564,7 @@ export default function TableSortAndSelection() {
         />
 
         <Box sx={{ display: 'flex', gap: 2, marginLeft: '415px' }}>
-          <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowNewTicketPopup(true); console.log("click") }}
+          <Button style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowNewTicketPopup(true); console.log("click") }}
           >New Ticket</Button>
           <NewTicketsMenu open={showNewTicketPopup} onClose={() => setShowNewTicketPopup(false)} />
           <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowPopup(true); console.log("click") }}
