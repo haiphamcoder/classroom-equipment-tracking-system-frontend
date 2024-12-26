@@ -2,7 +2,7 @@ import "../styles/Sidebar.scss";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PersonOutlineOutlined from "@mui/icons-material/PersonOutlineOutlined";
 import DeviceHub from "@mui/icons-material/DeviceHub";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import LogoutOutlined from "@mui/icons-material/LogoutOutlined";
 import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
 import AssignmentIcon from "@mui/icons-material/Assignment";
@@ -32,12 +32,12 @@ const Sidebar = () => {
               <span>Dashboard</span>
             </li>
           </Link>
-          <Link to="/devices" style={{ textDecoration: "none" }}>
+          <NavLink to="/devices" style={{ textDecoration: "none" }}>
             <li>
               <DeviceHub className="icon" />
               <span>Device</span>
             </li>
-          </Link>
+          </NavLink>
           <Link to="/tickets" style={{ textDecoration: "none" }}>
             <li>
               <AssignmentIcon className="icon" />

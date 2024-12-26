@@ -2,13 +2,51 @@ import { useEffect, useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
 import "../styles/Table.scss"
 import axios from 'axios';
+import DoneIcon from '@mui/icons-material/Done';
+import ReportIcon from '@mui/icons-material/Help';
+import Brightness1Icon from '@mui/icons-material/Brightness1';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import { Ticket, Items } from '../data/mockData';
+
+const statusInfoHelper = (status: any) => {
+  const getStatusInfo = (status: any) => {
+    switch (status) {
+      case 'RETURNED':
+        return { icon: <DoneIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#d4f8c4' };
+      case 'BORROWED':
+        return { icon: <HourglassEmptyIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#f8e084' };
+      case 'OVERDUE':
+        return { icon: <ReportIcon sx={{ fontSize: 10 }} />, bgColor: '#e5a6a6' };
+      case 'CANCELLED':
+        return { icon: <Brightness1Icon sx={{ fontSize: 10 }} />, bgColor: '#f0f0f0' };
+      default:
+        return { icon: null, bgColor: '#f9f9f9' }; // Default
+    }
+  };
+
+  const { icon, bgColor } = getStatusInfo(status);
+
+  return (
+    <div style={{
+      display: 'inline',
+      alignItems: 'center',
+      padding: '5px 10px',
+      border: '1px solid #ccc',
+      borderRadius: '20px',
+      backgroundColor: bgColor,
+      borderColor: 'transparent'
+    }}>
+      {icon && <span style={{ marginRight: '5px' }}>{icon}</span>}
+      {status}
+    </div>
+
+  );
+}
+
 const TicketsTable = () => {
   // format time
   const formatTime = (dateString: string) => {
@@ -17,6 +55,15 @@ const TicketsTable = () => {
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
   };
+  // format Date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   // format items for display
   const formatItems = (items: Items[]) => {
     return items.map(item =>
@@ -40,6 +87,7 @@ const TicketsTable = () => {
 
       const mapped_response = sortedData.map((item: any) => ({
         id: item.id,
+        date: item.borrowTime,
         borrowerName: item.borrowerName,
         staffName: item.staffName,
         borrowTime: item.borrowTime,
@@ -67,37 +115,37 @@ const TicketsTable = () => {
     // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
   }, []);
-
   const rows = ticket;
   return (
-    <TableContainer component={Paper} className='table' sx={{ borderradius: '20px', overflow: 'hidden' }}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell className='tableCell'>borrower name</TableCell>
-            <TableCell className='tableCell'>staff name</TableCell>
-            <TableCell className='tableCell'>borrow time</TableCell>
-            <TableCell className='tableCell'>deadline</TableCell>
-            <TableCell className='tableCell'>devices</TableCell>
-            <TableCell className='tableCell'>status</TableCell>
+    <Table sx={{ width: '100%', borderRadius: '12px', border: '1px solid #ddd', backgroundColor: '#f5f5f5' }} aria-label="simple table">
+      <TableHead>
+        <TableRow>
+          <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '14px' }}>Ngay</TableCell>
+          <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '14px' }}>borrower name</TableCell>
+          <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '14px' }}>staff name</TableCell>
+          <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '14px' }}>borrow time</TableCell>
+          <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '14px' }}>deadline</TableCell>
+          <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '14px' }}>devices</TableCell>
+          <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '14px' }}>status</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {[...rows].map((tickets) => (
+          <TableRow key={tickets.id}>
+            <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatDate(tickets.date)}</TableCell>
+            <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{tickets.borrowerName}</TableCell>
+            <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{tickets.staffName}</TableCell>
+            <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatTime(tickets.borrowTime)}</TableCell>
+            <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatTime(tickets.returnDeadline)}</TableCell>
+            <TableCell className='tableCell' style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatItems(tickets.items)}</TableCell>
+            <TableCell className='tableCell'>
+              <span className={`ticketstatus ${tickets.status}`} style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{statusInfoHelper(tickets.status)}</span>
+            </TableCell>
           </TableRow>
-        </TableHead>
-        <TableBody>
-          {[...rows].map((tickets) => (
-            <TableRow key={tickets.id}>
-              <TableCell className='tableCell'>{tickets.borrowerName}</TableCell>
-              <TableCell className='tableCell'>{tickets.staffName}</TableCell>
-              <TableCell className='tableCell'>{formatTime(tickets.borrowTime)}</TableCell>
-              <TableCell className='tableCell'>{formatTime(tickets.returnDeadline)}</TableCell>
-              <TableCell className='tableCell'>{formatItems(tickets.items)}</TableCell>
-              <TableCell className='tableCell'>
-                <span className={`ticketstatus ${tickets.status}`}>{tickets.status}</span>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>);
+        ))}
+      </TableBody>
+    </Table>
+  );
 };
 
 export default TicketsTable;

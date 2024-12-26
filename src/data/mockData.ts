@@ -12,6 +12,7 @@ export interface Ticket {
 	id: number,
 	borrowerName: string,
 	staffName: string,
+	date: string
 	borrowTime: string,
 	returnDeadline: string,
 	status: 'BORROWED' | 'RETURNED' | 'OVERDUE' | 'CANCELED',
@@ -77,4 +78,16 @@ export interface TicketExport {
 	endDate: string;
 	sortBy: 'BORROWER';
 	sortDirection: string;
+}
+export interface ReturnOrderItem {
+	orderItemId: number;
+	returnQuantity: number;
+	status: 'AVAILABLE' | 'UNAVAILABLE' | 'BORROWED' | 'DAMAGED' | 'NORMAL' | 'LOST',
+	notes: string;
+}
+
+export interface ReturnOrderRequest {
+	orderId: number;
+	staffId: number;
+	items: ReturnOrderItem[];
 }

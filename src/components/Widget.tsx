@@ -16,12 +16,10 @@ const Widget = ({ type }: { type: string }) => {
   const fetchData = async () => {
     try {
       const response = await axios.get("/api/equipment/list");
-      const mapped_response = response.data.map((item: any) => ({
+      const mappedResponse = response.data.map((item: any) => ({
         id: item.id,
       }));
-
-      setTotalRows(mapped_response.length);
-      console.log("Total rows:", totalRows);
+      setTotalRows(mappedResponse.length);
     } catch (error) {
       console.error("Error fetching ticket data:", error);
     }
@@ -30,7 +28,6 @@ const Widget = ({ type }: { type: string }) => {
   useEffect(() => {
     fetchData();
     const intervalId = setInterval(fetchData, 30000);
-
     return () => clearInterval(intervalId);
   }, []);
 
@@ -58,11 +55,13 @@ const Widget = ({ type }: { type: string }) => {
       break;
     case "devices":
       data = {
-        title: <NewDevicesMenu />,
+        title: <div className="new-devices">New Devices</div>,
         link: (
-          <Link to="/devices" style={{ textDecoration: "none" }}>
-            <ClickableText text="See all devices" />
-          </Link>
+          <div className="see-all-devices">
+            <Link to="/devices" style={{ textDecoration: "none" }}>
+              <ClickableText text="See all devices" />
+            </Link>
+          </div>
         ),
         icon: (
           <DeviceHub

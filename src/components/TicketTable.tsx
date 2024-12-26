@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import "../styles/TicketsTable.scss";
-import { Ticket, Items, UpdateTicket, TicketExport } from '../data/mockData';
+import { Ticket, Items, UpdateTicket, ReturnOrderRequest } from '../data/mockData';
 import Box from '@mui/joy/Box';
 import Table from '@mui/joy/Table';
 import Typography from '@mui/joy/Typography';
@@ -32,6 +32,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
 import UpdateTicketForm from './UpdateTicketMenu';
 import TicketExportPopup from './TicketExport';
+import NewTicketsMenu from './NewTicketsMenu';
+import { staff_id } from '../context/useAuth';
+
 
 function labelDisplayedRows({
   from,
@@ -100,6 +103,12 @@ const headCells: readonly HeadCell[] = [
     numeric: true,
     disablePadding: false,
     label: 'ten nhan vien',
+  },
+  {
+    id: 'date',
+    numeric: true,
+    disablePadding: false,
+    label: 'Ngay',
   },
   {
     id: 'borrowTime',
@@ -191,6 +200,8 @@ function EnhancedTableHead(props: EnhancedTableProps) {
                   },
 
                   '&:hover': { '& svg': { opacity: 1 } },
+
+                  '&:focus': { outline: 'none', boxShadow: 'none' },
                 }}
               >
                 {headCell.label}
@@ -257,18 +268,61 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           0 selected
         </Typography>
       )}
-      {numSelected > 0 ? (
+      {numSelected > 0 && numSelected < 2 ? (
+        <Tooltip title="Xác nhận trả">
+          <IconButton size="sm" color="success" variant="solid" onClick={() => { returnOrder(currentReturnOrder) }}>
+            <DoneIcon />
+          </IconButton>
+        </Tooltip>
+      ) : (
         <Tooltip title="Xoa">
           <IconButton size="sm" color="danger" variant="solid">
             <DeleteIcon />
           </IconButton>
         </Tooltip>
-      ) : (
-        <IconButton size="sm">
-        </IconButton>
       )}
     </Box>
   );
+}
+
+// mapped borrowOrder to ReturnOrderRequest
+let currentReturnOrder: ReturnOrderRequest | null = null;
+export function createReturnOrderRequest(borrowOrder: Ticket): ReturnOrderRequest {
+  console.log("input param:", borrowOrder);
+  currentReturnOrder = {
+    orderId: borrowOrder.id,
+    staffId: staff_id,
+    items: borrowOrder.items.map((item: any) => ({
+      orderItemId: item.id,
+      returnQuantity: item.quantity,
+      status: item.status,
+      notes: item.notes
+    }))
+  };
+  console.log("current return order", currentReturnOrder);
+  return currentReturnOrder;
+}
+// Function to clear the current ReturnOrderRequest
+export function clearReturnOrderRequest(): void {
+  currentReturnOrder = null;
+  console.log('ReturnOrderRequest has been cleared.');
+}
+async function returnOrder(returnOrderRequest: ReturnOrderRequest | null): Promise<void> {
+  if (!returnOrderRequest) {
+    console.error('No return order to process.');
+    return;
+  }
+  var payload: any;
+  try {
+    const response = await axios.post('/api/order/return', returnOrderRequest);
+    payload = response.data;
+    console.log('Order returned successfully:', response.data);
+    clearReturnOrderRequest();  // Clear after successful post
+  } catch (error) {
+    console.log("test", payload);
+    console.log("Payload", returnOrderRequest)
+    console.error('Failed to return order:', error);
+  }
 }
 export default function TableSortAndSelection() {
   const [ticket, setTicket] = useState<Ticket[]>([]);
@@ -290,12 +344,16 @@ export default function TableSortAndSelection() {
       const mapped_response = response.data.map((item: any) => ({
         id: item.id,
         borrowerName: item.borrowerName,
+        date: item.borrowTime,
         staffName: item.staffName,
         borrowTime: item.borrowTime,
         returnDeadline: item.returnDeadline,
         items: item.items.map((equipment: any) => ({
+          id: equipment.id,
           equipmentName: equipment.equipmentName,
-          quantity: equipment.quantity
+          quantity: equipment.quantity,
+          status: equipment.status,
+          notes: equipment.notes,
         })),
         returnTime: item.returnTime,
         status: item.status,
@@ -303,6 +361,7 @@ export default function TableSortAndSelection() {
           <MoreVertRounded />
         </IconButton>)
       }));
+      console.log("staff_id", staff_id);
       setTicket(mapped_response);
       setFilterTicket(mapped_response);
     } catch (error) {
@@ -322,23 +381,24 @@ export default function TableSortAndSelection() {
   }, []);
   const rows = filteredTicket;
 
-  const handleDelete = async (ids: number[]) => {
-    console.log("Deleting item with ID:", ids); // Check if this is logged when clicking Delete button
-    if (!window.confirm("Are you sure you want to delete this device?")) {
+  const handleDelete = async (ids: any) => {
+    if (ids.length === 0) {
+      console.error("No IDs to delete.");
       return;
     }
 
     try {
-      // Send a POST request to delete the item
-      await axios.post("/api/order/cancel/", { ids });
-      setTicket(ticket.filter((item) => !ids.at(item.id))); // Remove item from the state
-      setFilterTicket(filteredTicket.filter((item) => !ids.at(item.id)));
-      console.log(`Device with ID ${ids.join(", ")} deleted successfully.`);
+      const response = await axios.post("api/order/cancel", ids, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Delete successful:", response.data);
     } catch (error) {
-      console.error("Error deleting device:", error);
-      alert("An error occurred while deleting the device. Please try again.");
+      console.error("Error deleting items:", error);
     }
   };
+
 
   // Search handler
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -401,11 +461,20 @@ export default function TableSortAndSelection() {
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
   };
+  // format Date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Ticket>('id');
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [showNewTicketPopup, setShowNewTicketPopup] = useState(false);
 
   const getStatusInfo = (status: any) => {
     switch (status) {
@@ -415,7 +484,7 @@ export default function TableSortAndSelection() {
         return { icon: <HourglassEmptyIcon sx={{ fontSize: 10, display: 'inline' }} />, bgColor: '#f8e084' };
       case 'OVERDUE':
         return { icon: <WatchLaterIcon sx={{ fontSize: 10 }} />, bgColor: '#F8AE3F' };
-      case 'CANCEL':
+      case 'CANCELLED':
         return { icon: <CancelIcon sx={{ fontSize: 10 }} />, bgColor: '#F5B5B5' };
       default:
         return { icon: null, bgColor: '#f9f9f9' }; // Default
@@ -478,7 +547,9 @@ export default function TableSortAndSelection() {
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
   return (
-    <main className='ticket_main'>
+    <main className='ticket_main' style={{
+      marginLeft: '250px'
+    }}>
       <header className='TicketHeader'
         style={{ width: 500, marginTop: '30px', marginLeft: '50px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '40px', backgroundColor: 'transparent' }}
       >Tickets</header>
@@ -491,9 +562,15 @@ export default function TableSortAndSelection() {
           onChange={handleSearch}
           style={{ width: 800, top: 20, marginLeft: '50px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px', border: '1px solid #ccc', backgroundColor: 'transparent' }}
         />
-        <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, marginLeft: '570px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowPopup(true); console.log("click") }}
-        >Export</Button>
-        <TicketExportPopup open={showPopup} onClose={() => setShowPopup(false)} />
+
+        <Box sx={{ display: 'flex', gap: 2, marginLeft: '415px' }}>
+          <Button style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowNewTicketPopup(true); console.log("click") }}
+          >New Ticket</Button>
+          <NewTicketsMenu open={showNewTicketPopup} onClose={() => setShowNewTicketPopup(false)} />
+          <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowPopup(true); console.log("click") }}
+          >Export</Button>
+          <TicketExportPopup open={showPopup} onClose={() => setShowPopup(false)} />
+        </Box>
       </Box>
       <Sheet variant="outlined"
         sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '10px', top: { xs: '10%', md: '50px' }, left: '50px', backgroundColor: 'whitesmoke' }
@@ -534,7 +611,11 @@ export default function TableSortAndSelection() {
                 const { icon, bgColor } = getStatusInfo(row.status);
                 return (
                   <tr
-                    onClick={(event) => handleClick(event, row.id as any)}
+                    onClick={(event) => {
+                      handleClick(event, row.id as any);
+                      createReturnOrderRequest(row);
+                      console.log("current selected", currentReturnOrder)
+                    }}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
@@ -564,6 +645,7 @@ export default function TableSortAndSelection() {
                     </th>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.borrowerName}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.staffName}</td>
+                    <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatDate(row.date)}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatTime(row.borrowTime)}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{formatTime(row.returnDeadline)}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>
@@ -624,13 +706,13 @@ export default function TableSortAndSelection() {
                   } as React.CSSProperties
                 }
               >
-                <td colSpan={8} aria-hidden />
+                <td colSpan={9} aria-hidden />
               </tr>
             )}
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan={9}>
+              <td colSpan={10}>
                 <Box
                   sx={{
                     display: 'flex',
@@ -686,6 +768,6 @@ export default function TableSortAndSelection() {
           </tfoot>
         </Table>
       </Sheet>
-    </main>
+    </main >
   );
 }

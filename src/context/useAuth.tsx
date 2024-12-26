@@ -17,13 +17,13 @@ type UserContextType = {
 
 type Props = { children: React.ReactNode };
 const UserContext = createContext<UserContextType>({} as UserContextType);
-
+export var staff_id: number = 0;
 export const UserProvider = ({ children }: Props) => {
   // const getBaseUrl = () => {
   //   if (import.meta.env.DEV) {
-  //     return '/api' 
+  //     return '/api' // Uses Vite proxy in development
   //   }
-  //   return import.meta.env.VITE_API_BACKEND_URL 
+  //   return import.meta.env.VITE_API_BACKEND_URL // Uses direct URL in production
   // }
   const [isReady, setIsReady] = useState(false);
   const [token, setToken] = useState<string | null>(null);
@@ -47,6 +47,8 @@ export const UserProvider = ({ children }: Props) => {
         const userData = response.data;
         localStorage.setItem("user", JSON.stringify(userData));
         setToken("token");
+        staff_id = response.data.id;
+        console.log("staff id", staff_id);
         setAlert({ type: "success", message: "Đăng nhập thành công!" });
 
 

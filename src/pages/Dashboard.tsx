@@ -2,6 +2,7 @@ import Sidebar from "../components/Sidebar";
 import Widget from "../components/Widget";
 import Table from "../components/Table";
 import "../styles/Dashboard.scss";
+import Box from "@mui/joy/Box";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
@@ -17,19 +18,33 @@ const Dashboard = () => {
     }
   }, [navigate]);
   return (
-    <div className="dashboard">
+    <main className="dashboard">
       <Sidebar />
-      <div className="homeContainer">
-        <div className="widgets">
+      <Box className="homeContainer">
+        <header className='DeviceHeader'
+          style={{ width: 500, marginTop: '30px', marginLeft: '50px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '40px', backgroundColor: 'transparent' }}
+        >Dashboard</header>
+        <Box className="widgets">
           <Widget type="tickets" />
           <Widget type="devices" />
-        </div>
-        <div className="listContainer">
-          <div className="listTitle">Ticket table</div>
+        </Box>
+        <Box className="listContainer" sx={{ backgroundColor: '#f0f4f8', }}>
+          <div className="listTitle" style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '20px' }}
+          >Recent Tickets</div>
           <Table />
-        </div>
-      </div>
-    </div>
+        </Box>
+        <Box className="listContainer" sx={{ backgroundColor: '#f0f4f8', }}>
+          <div className="listTitle" style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '20px' }}
+          >Recent Tickets</div>
+          <Table />
+        </Box>
+        <Box className="listContainer" sx={{ backgroundColor: '#f0f4f8', }}>
+          <div className="listTitle" style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '20px' }}
+          >Recent Tickets</div>
+          <Table />
+        </Box>
+      </Box>
+    </main>
   );
 };
 

@@ -1,16 +1,7 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, MenuItem } from '@mui/material';
 import axios from 'axios';
-
-interface TicketExport {
-  borrowerName: string;
-  status: 'BORROWED' | 'RETURNED' | 'OVERDUE' | 'CANCELED';
-  startDate: string;
-  endDate: string;
-  sortBy: 'BORROWER';
-  sortDirection: string;
-}
+import { TicketExport } from '../data/mockData';
 
 const TicketExportPopup: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const [formData, setFormData] = useState<TicketExport>({
@@ -28,9 +19,6 @@ const TicketExportPopup: React.FC<{ open: boolean; onClose: () => void }> = ({ o
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }))
   };
-
-
-
 
   const handleSubmit = async () => {
     try {
