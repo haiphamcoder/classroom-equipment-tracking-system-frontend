@@ -33,16 +33,7 @@ const Dashboard = () => {
           >Recent Tickets</div>
           <Table />
         </Box>
-        <Box className="listContainer" sx={{ backgroundColor: '#f0f4f8', }}>
-          <div className="listTitle" style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '20px' }}
-          >Recent Tickets</div>
-          <Table />
-        </Box>
-        <Box className="listContainer" sx={{ backgroundColor: '#f0f4f8', }}>
-          <div className="listTitle" style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '20px' }}
-          >Recent Tickets</div>
-          <Table />
-        </Box>
+       
       </Box>
     </main>
   );

@@ -1,8 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Popup from "reactjs-popup";
-import { Box, TextField, Button, MenuItem, Typography } from "@mui/material";
+import { Box, TextField, Button, MenuItem, Alert } from "@mui/material";
+import { Staff } from "../pages/StaffList";
 
-const RegisterForm = ({ open, onClose, onSubmit }: any) => {
+interface UpdateStaffFormProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: Staff) => void;
+  staffData: Staff | undefined;
+}
+
+const UpdateStaffForm = ({
+  open,
+  onClose,
+  onSubmit,
+  staffData,
+}: UpdateStaffFormProps) => {
   const building = [
     { value: "D7", label: "D7" },
     { value: "D9", label: "D9" },
@@ -18,40 +31,60 @@ const RegisterForm = ({ open, onClose, onSubmit }: any) => {
     { value: "C7", label: "C7" },
   ];
 
-  const [formData, setFormData] = useState({
-    username: "",
-    fullName: "",
-    phone: "",
-    email: "",
-    buildingName: "",
-  });
+  const [formData, setFormData] = useState<Staff>(
+    staffData || {
+      id: "",
+      name: "",
+      email: "",
+      phone: "",
+      buildingId: { buildingName: "" },
+    }
+  );
 
-  const handleChange = (e: any) => {
-    const { id, name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id || name]: value }));
+  const [alert, setAlert] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (staffData) {
+      setFormData({ ...staffData });
+    }
+  }, [staffData]);
+
+  useEffect(() => {
+    if (alert) {
+      const timeout = setTimeout(() => setAlert(null), 2000); // Cảnh báo tự động biến mất sau 2 giây
+      return () => clearTimeout(timeout);
+    }
+  }, [alert]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSave = () => {
-    const { username, fullName, phone, email, buildingName } = formData;
-    if (!username || !fullName || !phone || !email || !buildingName) {
-      alert("Please fill all fields.");
+    const {
+      name,
+      phone,
+      buildingId: { buildingName },
+    } = formData;
+
+    if (!name || !phone || !buildingName) {
+      setAlert("Please fill in all required fields.");
       return;
     }
 
     onSubmit(formData);
     onClose();
-    setFormData({
-      username: "",
-      fullName: "",
-      phone: "",
-      email: "",
-      buildingName: "",
-    });
   };
+
+  if (!staffData) return null;
 
   return (
     <Popup open={open} modal nested onClose={onClose}>
       <Box
+        className="modal"
         component="form"
         sx={{
           display: "flex",
@@ -66,61 +99,55 @@ const RegisterForm = ({ open, onClose, onSubmit }: any) => {
         noValidate
         autoComplete="off"
       >
-        <Typography variant="h5" align="center" gutterBottom>
-          Add Staff
-        </Typography>
+        {alert && (
+          <Alert
+            severity="warning"
+            sx={{
+              mb: 2,
+              borderRadius: 1,
+              position: "relative",
+              "& .MuiAlert-action": { display: "none" }, // Loại bỏ nút đóng
+            }}
+          >
+            {alert}
+          </Alert>
+        )}
+        <div className="header">Update Staff</div>
         <TextField
           fullWidth
-          id="username"
-          label="Username"
-          value={formData.username}
+          name="name"
+          label="Name"
+          value={formData.name}
           onChange={handleChange}
-          margin="dense"
-          variant="outlined"
+          helperText={!formData.name && "This field is required"}
         />
         <TextField
           fullWidth
-          id="fullName"
-          label="Full Name"
-          value={formData.fullName}
-          onChange={handleChange}
-          margin="dense"
-          variant="outlined"
-        />
-        <TextField
-          fullWidth
-          id="phone"
+          name="phone"
           label="Phone"
           value={formData.phone}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (/^\d*$/.test(value)) {
-              handleChange(e);
-            }
-          }}
-          margin="dense"
-          variant="outlined"
-          type="text"
-        />
-        <TextField
-          fullWidth
-          id="email"
-          label="Email"
-          value={formData.email}
           onChange={handleChange}
-          margin="dense"
-          variant="outlined"
-          type="email"
+          type="number"
+          sx={{
+            "& input[type=number]": {
+              MozAppearance: "textfield", // Loại bỏ nút tăng giảm trên Firefox
+            },
+            "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
+              {
+                WebkitAppearance: "none", // Loại bỏ nút tăng giảm trên Chrome, Edge, và Safari
+                margin: 0,
+              },
+          }}
+          helperText={!formData.phone && "This field is required"}
         />
         <TextField
           fullWidth
           name="buildingName"
           select
           label="Building Name"
-          value={formData.buildingName}
+          value={formData.buildingId?.buildingName || ""}
           onChange={handleChange}
-          margin="dense"
-          variant="outlined"
+          helperText={!formData.buildingId?.buildingName && "This field is required"}
         >
           {building.map((building) => (
             <MenuItem key={building.value} value={building.value}>
@@ -141,4 +168,4 @@ const RegisterForm = ({ open, onClose, onSubmit }: any) => {
   );
 };
 
-export default RegisterForm;
+export default UpdateStaffForm;
