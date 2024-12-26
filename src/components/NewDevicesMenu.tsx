@@ -5,6 +5,41 @@ import { TextField, Box, MenuItem, Snackbar } from "@mui/material";
 import axios from "axios";
 
 const NewDevicesMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+  const building = [
+    { value: "D7", label: "D7" },
+    { value: "D9", label: "D9" },
+    { value: "D3", label: "D3" },
+    { value: "D5", label: "D5" },
+    { value: "D3-5", label: "D3-5" },
+    { value: "D6", label: "D6" },
+    { value: "D8", label: "D8" },
+    { value: "C1", label: "C1" },
+    { value: "C2", label: "C2" },
+    { value: "B1", label: "B1" },
+    { value: "C4", label: "C4" },
+    { value: "C7", label: "C7" },
+  ];
+  const [selectedBuilding, setSelectedBuilding] = useState("");
+  const [roomId, setRoomId] = useState(null);
+
+  // Fetch room ID based on the building name
+  const fetchRoomId = async (buildingName: any) => {
+    try {
+      const response = await axios.get(`/api/building/name/${buildingName}`);
+      const roomData = response.data;
+      setRoomId(roomData.id); // Assuming the response has the "id" field
+    } catch (error) {
+      console.error("Error fetching room data:", error);
+    }
+  };
+
+  // Handle dropdown change
+  const handleBuildingChange = (event: any) => {
+    const buildingName = event.target.value;
+    setSelectedBuilding(buildingName);
+    fetchRoomId(buildingName); // Fetch room ID when building is selected
+  };
+
   const [formData, setFormData] = useState({
     name: "",
     roomId: 0,
@@ -42,15 +77,29 @@ const NewDevicesMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
     };
 
     fetchRooms();
-  }, []);  // Handle input change and update state
+  }, []);
+  // Handle input change and update state
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+
+    // Ensure the input is a valid number and greater than or equal to 0
+    const numericValue = Number(value);
+
+    // Only allow the update if the value is a valid number and greater than or equal to 0
+    if (!isNaN(numericValue) && numericValue >= 0) {
+      setFormData({
+        ...formData,
+        [id]: value,
+      });
+    }
+  };
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData({
       ...formData,
       [id]: value,
     });
   };
-
   // Handle room selection
   const handleRoomChange = (e: React.ChangeEvent<{ value: unknown }>) => {
     setFormData({
@@ -101,7 +150,7 @@ const NewDevicesMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
       >
         <Box className="modal" component="form" sx={{ display: "flex", flexDirection: "column", gap: 3, p: 2, borderRadius: '10px', backgroundColor: '#fbfcfe', marginLeft: '100px' }}
           noValidate autoComplete="off">
-          <div className="header"> Add tickets </div>
+          <div className="header" style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '20px' }}> Add devices </div>
           <div className="content">
             <TextField
               fullWidth
@@ -125,7 +174,7 @@ const NewDevicesMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
               id="name"
               label="Device Name"
               value={formData.name}
-              onChange={handleInputChange}
+              onChange={handleNameChange}
               margin="normal"
               variant="outlined"
             />

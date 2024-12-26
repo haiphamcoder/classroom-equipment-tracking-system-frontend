@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useRef, useState, useEffect } from "react";
 import Popup from "reactjs-popup";
-// import ClickableText from "./ClickableText";
 import "../styles/NewDevicesMenu.scss";
 import {
   TextField,
@@ -145,12 +144,6 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
           returnDeadline: date.toISOString(),
         }));
       }
-      // // Update the newDeadline in the updateTicket
-      // setFormData((prevTicket) => ({
-      //   ...prevTicket,
-      //   returnDeadline: formattedDate,
-      // }));
-
       console.log('Updated Ticket id:', formData.returnDeadline); // To see the updated object in the console
     }
   };
