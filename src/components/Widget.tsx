@@ -4,40 +4,60 @@ import "../styles/Widget.scss";
 import KeyboardArrowUp from '@mui/icons-material/KeyboardArrowUp';
 import ListSharp from '@mui/icons-material/ListSharp';
 import DeviceHub from '@mui/icons-material/DeviceHub';
-import NewDevicesMenu from "./NewDevicesMenu";
-import NewTicketsMenu from "./NewTicketsMenu";
 import ClickableText from "./ClickableText";
 import { Link } from "react-router-dom";
 
 const Widget = ({ type }: { type: string }) => {
   let data;
-  const [totalRows, setTotalRows] = useState(0);
 
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalCount1, setTotalCount1] = useState(0);
   const fetchData = async () => {
     try {
       const response = await axios.get("/api/equipment/list");
       const mappedResponse = response.data.map((item: any) => ({
         id: item.id,
       }));
-      setTotalRows(mappedResponse.length);
+      setTotalCount(mappedResponse.length);
+    } catch (error) {
+      console.error("Error fetching ticket data:", error);
+    }
+  };
+  const fetchData1 = async () => {
+    try {
+      const response = await axios.get("/api/order/list", {
+        params: {
+          sort: "ASC",
+          sortBy: "BORROW_TIME"
+        }
+      });
+      const mapped_response = response.data.map((item: any) => ({
+        id: item.id,
+      }));
+      setTotalCount1(mapped_response.length);
     } catch (error) {
       console.error("Error fetching ticket data:", error);
     }
   };
 
+
   useEffect(() => {
+    fetchData1();
     fetchData();
-    const intervalId = setInterval(fetchData, 30000);
+    console.log("row", totalCount);
+    const intervalId = setInterval(fetchData, 5000);
     return () => clearInterval(intervalId);
   }, []);
 
   switch (type) {
     case "tickets":
       data = {
-        title: <NewTicketsMenu />,
+        title: <div className="new-devices">Total Tickets - {totalCount}</div>,
         link: (
           <Link to="/tickets" style={{ textDecoration: "none" }}>
-            <ClickableText text="See all tickets" />
+            <ClickableText text="See all tickets" onClick={function(): void {
+              throw new Error("Function not implemented.");
+            }} />
           </Link>
         ),
         icon: (
@@ -55,11 +75,13 @@ const Widget = ({ type }: { type: string }) => {
       break;
     case "devices":
       data = {
-        title: <div className="new-devices">New Devices</div>,
+        title: <div className="new-devices">Total Devices - {totalCount1} </div>,
         link: (
           <div className="see-all-devices">
             <Link to="/devices" style={{ textDecoration: "none" }}>
-              <ClickableText text="See all devices" />
+              <ClickableText text="See all devices" onClick={function(): void {
+                throw new Error("Function not implemented.");
+              }} />
             </Link>
           </div>
         ),
