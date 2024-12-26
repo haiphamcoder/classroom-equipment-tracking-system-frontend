@@ -29,10 +29,10 @@ const staffId = user.id;
 
 const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const [loading, setLoading] = useState(false);
-  const [equipmentOptions, setEquipmentOptions] = useState<number[]>([]); // State for equipment IDs
+  const [equipmentOptions, setEquipmentOptions] = useState<any[]>([]); // State for equipment IDs
   const [formData, setFormData] = useState<NewTicket>({
     borrowerId: 0,
-    staffId: 0,
+    staffId: staffId,
     borrowTime: new Date().toISOString(),
     returnDeadline: new Date().toISOString(),
     items: [],
@@ -45,6 +45,7 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
         const response = await axios.get("/api/equipment/list");
         const ids = response.data.map((item: any) => item.id); // Extract only the IDs
         setEquipmentOptions(ids);
+        console.log("user in ticket", user.id);
       } catch (error) {
         console.error("Error fetching equipment data:", error);
       }
@@ -52,31 +53,18 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
 
     fetchData();
     // Set up periodic refresh
-    const intervalId = setInterval(fetchData, 30000); // Refresh every 30 seconds
+    const intervalId = setInterval(fetchData, 10000); // Refresh every 30 seconds
 
     // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
 
   }, []);
 
-  const fetchEquipmentData = async (id: string): Promise<string | null> => {
-    try {
-      const response = await axios.post("/api/equipment/get", { id });
-
-      // Assuming the response returns a single item or you want to get the name of the first item
-      const name = response.data?.[0]?.name ?? null;
-
-      return name;
-
-    } catch (error) {
-      console.error("Error fetching equipment data:", error);
-      return null;
-    }
-  };  // Handle adding a new row
+  // Handle adding a new row
   const handleAddRow = () => {
     setFormData((prev) => ({
       ...prev,
-      items: [...prev.items, { equipmentId: 0, equipmentName: "", quantity: 0, notes: "" }],
+      items: [...prev.items, { equipmentId: 0, quantity: 0, notes: "" }],
     }));
   };
 
@@ -95,25 +83,6 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
     );
     setFormData((prev) => ({ ...prev, items: updatedItems }));
   };
-
-  // const formatDateTimeForInput = (isoString: string) => {
-  //   const date = new Date(isoString);
-  //   return date.toISOString().slice(0, 16); // Format: "YYYY-MM-DDThh:mm"
-  // };
-
-  // const handleDateTimeChange = (field: "borrowTime" | "returnDeadline", value: string) => {
-  //   try {
-  //     const date = new Date(value);
-  //     if (!isNaN(date.getTime())) {
-  //       setFormData((prev) => ({
-  //         ...prev,
-  //         [field]: date.toISOString(),
-  //       }));
-  //     }
-  //   } catch (error) {
-  //     console.error("Invalid date input:", error);
-  //   }
-  // };
 
   const [startValue, setStartValue] = React.useState<Dayjs | null>(
     dayjs().set('date', dayjs().date()).set('month', dayjs().month()).set('year', dayjs().year())
@@ -197,16 +166,11 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
 
     setLoading(true);
     try {
-      // const formattedData = {
-      //   ...formData,
-      // borrowTime: new Date(formData.borrowTime).toISOString(),
-      // returnDeadline: new Date(formData.returnDeadline).toISOString(),
-      // };
-
       const response = await axios.post("/api/order/create", formData);
       console.log("Ticket created successfully:", response.data);
       setFormData({ borrowerId: 0, staffId: 0, borrowTime: "", returnDeadline: "", items: [] })
       ref.current.close();
+      console.log("daddaw", staffId);
     } catch (error) {
       console.error("Error creating ticket:", error);
     } finally {
@@ -250,37 +214,6 @@ const NewTicketsMenu: React.FC<{ open: boolean; onClose: () => void }> = ({ open
             margin="normal"
             variant="outlined"
           />
-
-          {/* Borrow Time */}
-          {/*}<TextField
-            fullWidth
-            label="Thoi gian muon"
-            type="datetime-local"
-            value={formatDateTimeForInput(formData.borrowTime)}
-            onChange={(e) => handleDateTimeChange("borrowTime", e.target.value)}
-            margin="normal"
-            variant="outlined"
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
-
-          {/* Return Deadline */}
-          {/*<TextField
-            fullWidth
-            label="Thoi gian tra"
-            type="datetime-local"
-            value={formatDateTimeForInput(formData.returnDeadline)}
-            onChange={(e) => handleDateTimeChange("returnDeadline", e.target.value)}
-            margin="normal"
-            variant="outlined"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            inputProps={{
-              min: formatDateTimeForInput(formData.borrowTime),
-            }}
-          />*/}
 
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DemoContainer components={['DateTimePicker']}>
