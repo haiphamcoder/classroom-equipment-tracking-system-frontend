@@ -90,59 +90,56 @@ const headCells: readonly HeadCell[] = [
     id: 'id',
     numeric: true,
     disablePadding: true,
-    label: 'Id',
+    label: 'No.',
   },
   {
     id: 'borrowerName',
-    numeric: true,
+    numeric: false,
     disablePadding: false,
-    label: 'Ten nguoi muon',
+    label: 'Borrower Name',
   },
   {
     id: 'staffName',
-    numeric: true,
+    numeric: false,
     disablePadding: false,
-    label: 'ten nhan vien',
+    label: 'Staff Name',
   },
   {
     id: 'date',
-    numeric: true,
+    numeric: false,
     disablePadding: false,
-    label: 'Ngay',
+    label: 'Date',
   },
   {
     id: 'borrowTime',
-    numeric: true,
+    numeric: false,
     disablePadding: false,
-    label: 'thoi gian muon',
+    label: 'Borrow Time',
   },
-
   {
     id: 'returnDeadline',
-    numeric: true,
+    numeric: false,
     disablePadding: false,
-    label: 'thoi gian tra',
+    label: 'Return Deadline',
   },
   {
     id: 'status',
-    numeric: true,
+    numeric: false,
     disablePadding: false,
-    label: 'trang thai',
+    label: 'Status',
   },
   {
     id: 'items',
-    numeric: true,
+    numeric: false,
     disablePadding: false,
-    label: 'Thiet bi',
+    label: 'Devices',
   },
   {
     id: 'action',
-    numeric: true,
+    numeric: false,
     disablePadding: false,
-    label: 'actions',
-  },
-
-
+    label: 'Action',
+  }
 ];
 function EnhancedTableHead(props: EnhancedTableProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
@@ -275,7 +272,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           </IconButton>
         </Tooltip>
       ) : (
-        <Tooltip title="Xoa">
+        <Tooltip title="Delete">
           <IconButton size="sm" color="danger" variant="solid">
             <DeleteIcon />
           </IconButton>
@@ -473,7 +470,7 @@ export default function TableSortAndSelection() {
   const [orderBy, setOrderBy] = React.useState<keyof Ticket>('id');
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [showNewTicketPopup, setShowNewTicketPopup] = useState(false);
 
   const getStatusInfo = (status: any) => {
@@ -547,31 +544,68 @@ export default function TableSortAndSelection() {
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
   return (
-    <main className='ticket_main' style={{
-      marginLeft: '250px'
-    }}>
+    <main className='ticket_main' style={{ marginLeft: '250px' }}>
       <header className='TicketHeader'
         style={{ width: 500, marginTop: '30px', marginLeft: '50px', fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '40px', backgroundColor: 'transparent' }}
       >Tickets</header>
-      <Box className='search_and_export' sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+      <Box className='search_and_export' sx={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        margin: '10px 50px'
+      }}>
         <Input
+          className="search-input"
           startDecorator={<SearchIcon />}
           placeholder='Search'
           variant='outlined'
           value={searchTerm}
           onChange={handleSearch}
-          style={{ width: 800, top: 20, marginLeft: '50px', borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px', border: '1px solid #ccc', backgroundColor: 'transparent' }}
+          style={{ 
+            width: 800, 
+            borderRadius: '10px', 
+            fontFamily: 'Inter, serif', 
+            fontWeight: '450', 
+            fontSize: '14px', 
+            backgroundColor: 'transparent' 
+          }}
         />
-
-        <Box sx={{ display: 'flex', gap: 2, marginLeft: '415px' }}>
-          <Button style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowNewTicketPopup(true); console.log("click") }}
-          >New Ticket</Button>
-          <NewTicketsMenu open={showNewTicketPopup} onClose={() => setShowNewTicketPopup(false)} />
-          <Button startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />} style={{ top: 20, borderRadius: '10px', fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '14px' }} onClick={() => { setShowPopup(true); console.log("click") }}
-          >Export</Button>
-          <TicketExportPopup open={showPopup} onClose={() => setShowPopup(false)} />
+        <Box sx={{ display: 'flex', gap: 1, marginLeft: 2 }}>
+          <Button 
+            onClick={() => setShowNewTicketPopup(true)}
+            sx={{
+              borderRadius: '10px',
+              fontFamily: 'Inter, serif',
+              fontWeight: '450',
+              fontSize: '14px'
+            }}
+          >
+            New Ticket
+          </Button>
+          <Button 
+            startDecorator={<FileDownloadIcon style={{ fontSize: 18 }} />}
+            onClick={() => setShowPopup(true)}
+            sx={{
+              borderRadius: '10px',
+              fontFamily: 'Inter, serif',
+              fontWeight: '450',
+              fontSize: '14px'
+            }}
+          >
+            Export
+          </Button>
         </Box>
       </Box>
+
+      <NewTicketsMenu 
+        open={showNewTicketPopup} 
+        onClose={() => setShowNewTicketPopup(false)} 
+      />
+      
+      <TicketExportPopup 
+        open={showPopup} 
+        onClose={() => setShowPopup(false)} 
+      />
+
       <Sheet variant="outlined"
         sx={{ width: { xs: '90%', md: '1500px' }, borderRadius: '10px', top: { xs: '10%', md: '50px' }, left: '50px', backgroundColor: 'whitesmoke' }
         }
@@ -609,6 +643,7 @@ export default function TableSortAndSelection() {
                 const isItemSelected = selected.includes(row.id as any);
                 const labelId = `enhanced-table-checkbox-${index}`;
                 const { icon, bgColor } = getStatusInfo(row.status);
+                const continuousIndex = page * rowsPerPage + index + 1;
                 return (
                   <tr
                     onClick={(event) => {
@@ -641,7 +676,7 @@ export default function TableSortAndSelection() {
                       />
                     </th>
                     <th id={labelId} scope="row" style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>
-                      {row.id}
+                      {continuousIndex}
                     </th>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.borrowerName}</td>
                     <td style={{ fontFamily: 'Inter, serif', fontWeight: '450', fontSize: '12px' }}>{row.staffName}</td>
@@ -768,6 +803,6 @@ export default function TableSortAndSelection() {
           </tfoot>
         </Table>
       </Sheet>
-    </main >
+    </main>
   );
 }
