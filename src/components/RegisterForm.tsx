@@ -1,6 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Popup from "reactjs-popup";
-import { Box, TextField, Button, MenuItem } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Button,
+  MenuItem,
+  Typography,
+  Alert,
+} from "@mui/material";
 
 const RegisterForm = ({ open, onClose, onSubmit }: any) => {
   const building = [
@@ -26,42 +33,71 @@ const RegisterForm = ({ open, onClose, onSubmit }: any) => {
     buildingName: "",
   });
 
-  // Handle input changes
+  const [alert, setAlert] = useState<string | null>(null);
+
   const handleChange = (e: any) => {
     const { id, name, value } = e.target;
     setFormData((prev) => ({ ...prev, [id || name]: value }));
   };
 
-  // Handle form submission
   const handleSave = () => {
-    // Validation: Ensure all fields are filled
     const { username, fullName, phone, email, buildingName } = formData;
     if (!username || !fullName || !phone || !email || !buildingName) {
-      alert("Please fill all fields.");
+      setAlert("Please fill in all the required fields.");
       return;
     }
 
-    onSubmit(formData); // Pass the data to parent component
-    onClose(); // Close the popup
+    onSubmit(formData);
+    onClose();
     setFormData({
       username: "",
       fullName: "",
       phone: "",
       email: "",
       buildingName: "",
-    }); // Reset the form
+    });
   };
+
+  useEffect(() => {
+    if (alert) {
+      const timeout = setTimeout(() => setAlert(null), 2000); // Cảnh báo sẽ biến mất sau 2 giây
+      return () => clearTimeout(timeout); // Xóa timeout khi component unmount hoặc alert thay đổi
+    }
+  }, [alert]);
 
   return (
     <Popup open={open} modal nested onClose={onClose}>
       <Box
-        className="modal"
-        component="form"
-        sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          p: 4,
+          width: 400,
+          maxWidth: "90%",
+          borderRadius: 2,
+          boxShadow: 4,
+          bgcolor: "background.paper",
+        }}
         noValidate
         autoComplete="off"
       >
-        <div className="header">Add Staff</div>
+        {alert && (
+          <Alert
+            severity="warning"
+            sx={{
+              mb: 2,
+              borderRadius: 1,
+              position: "relative",
+              "& .MuiAlert-action": { display: "none" }, // Loại bỏ nút x
+            }}
+          >
+            {alert}
+          </Alert>
+        )}
+        <Typography variant="h5" align="center" gutterBottom>
+          Add Staff
+        </Typography>
         <TextField
           fullWidth
           id="username"
@@ -70,6 +106,7 @@ const RegisterForm = ({ open, onClose, onSubmit }: any) => {
           onChange={handleChange}
           margin="dense"
           variant="outlined"
+          helperText={!formData.username && "This field is required"}
         />
         <TextField
           fullWidth
@@ -77,8 +114,9 @@ const RegisterForm = ({ open, onClose, onSubmit }: any) => {
           label="Full Name"
           value={formData.fullName}
           onChange={handleChange}
-          margin="normal"
+          margin="dense"
           variant="outlined"
+          helperText={!formData.fullName && "This field is required"}
         />
         <TextField
           fullWidth
@@ -91,25 +129,21 @@ const RegisterForm = ({ open, onClose, onSubmit }: any) => {
               handleChange(e);
             }
           }}
-          margin="normal"
+          margin="dense"
           variant="outlined"
           type="text"
+          helperText={!formData.phone && "This field is required"}
         />
-
         <TextField
           fullWidth
           id="email"
           label="Email"
           value={formData.email}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-            }
-            handleChange(e);
-          }}
-          margin="normal"
+          onChange={handleChange}
+          margin="dense"
           variant="outlined"
           type="email"
+          helperText={!formData.email && "This field is required"}
         />
         <TextField
           fullWidth
@@ -118,8 +152,9 @@ const RegisterForm = ({ open, onClose, onSubmit }: any) => {
           label="Building Name"
           value={formData.buildingName}
           onChange={handleChange}
-          margin="normal"
+          margin="dense"
           variant="outlined"
+          helperText={!formData.buildingName && "This field is required"}
         >
           {building.map((building) => (
             <MenuItem key={building.value} value={building.value}>
@@ -128,20 +163,10 @@ const RegisterForm = ({ open, onClose, onSubmit }: any) => {
           ))}
         </TextField>
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
-          <Button
-            className="savebutton"
-            onClick={handleSave}
-            variant="contained"
-            color="primary"
-          >
+          <Button onClick={handleSave} variant="contained" color="primary">
             Save
           </Button>
-          <Button
-            className="exitbutton"
-            onClick={onClose}
-            variant="outlined"
-            color="secondary"
-          >
+          <Button onClick={onClose} variant="outlined" color="secondary">
             Exit
           </Button>
         </Box>

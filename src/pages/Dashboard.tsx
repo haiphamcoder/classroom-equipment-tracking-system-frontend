@@ -10,9 +10,10 @@ const Dashboard = () => {
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) {
-      const parsedUser = JSON.parse(user); // Parse the string to a JavaScript object
+      const parsedUser = JSON.parse(user); 
       if (parsedUser.firstLogin) {
-        navigate("/firstLogin"); // Navigate to the first login page if firstLogin is false
+        
+        navigate("/firstLogin"); 
       }
     }
   }, [navigate]);
@@ -32,16 +33,7 @@ const Dashboard = () => {
           >Recent Tickets</div>
           <Table />
         </Box>
-        <Box className="listContainer" sx={{ backgroundColor: '#f0f4f8', }}>
-          <div className="listTitle" style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '20px' }}
-          >Recent Tickets</div>
-          <Table />
-        </Box>
-        <Box className="listContainer" sx={{ backgroundColor: '#f0f4f8', }}>
-          <div className="listTitle" style={{ fontFamily: 'Inter, serif', fontWeight: '600', fontSize: '20px' }}
-          >Recent Tickets</div>
-          <Table />
-        </Box>
+       
       </Box>
     </main>
   );

@@ -8,7 +8,7 @@ import {
   TextField,
   Typography,
   Button,
-} from "@mui/material"
+} from "@mui/material";
 import ChangePasswordForm from "../components/ChangePasswordForm";
 
 const Profile = () => {
@@ -45,7 +45,7 @@ const Profile = () => {
       <Sidebar />
       <div className="homeContainer">
         <Container maxWidth="sm">
-          <Paper elevation={10} sx={{ p: 4, mt: 4 }}>
+          <Paper elevation={10} sx={{ p: 4, mt: 4, borderRadius: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
               <Avatar
                 sx={{
@@ -102,13 +102,20 @@ const Profile = () => {
               InputProps={{ readOnly: true }}
             />
             <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
-              <Button variant="contained" color="primary" onClick={() => setPopupOpen(true)}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setPopupOpen(true)}
+              >
                 Change Password
               </Button>
             </Box>
           </Paper>
         </Container>
-        <ChangePasswordForm open={popupOpen} onClose={() => setPopupOpen(false)} />
+        <ChangePasswordForm
+          open={popupOpen}
+          onClose={() => setPopupOpen(false)}
+        />
       </div>
     </div>
   );

@@ -41,9 +41,7 @@ export const UserProvider = ({ children }: Props) => {
 
   const login = async (data: LoginParams) => {
     try {
-      //       // Send login request to the API
-      //       const baseUrl = getBaseUrl();
-      //       const response = await axios.post(`${baseUrl}/staff/login`, data);
+   
       const response = await axios.post("/api/staff/login", data);
       if (response.status === 200) {
         const userData = response.data;
