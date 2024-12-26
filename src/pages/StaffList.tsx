@@ -1,24 +1,34 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Paper,
+  IconButton,
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   TextField,
+  Tooltip,
+  Typography,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import Sidebar from "../components/Sidebar";
 import RegisterForm from "../components/RegisterForm";
 import UpdateStaffForm from "../components/UpdateStaffForm";
 import CustomAlert from "../components/CustomAlert";
+import EditIcon from "@mui/icons-material/Edit";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
+import { downloadExcelFile } from "../components/StaffExport";
+import axios from "axios";
+import "../styles/StaffList.scss";
 
 export type Staff = {
   id: string | "";
@@ -43,6 +53,10 @@ const Staff = () => {
     title: string;
     message: string;
   } | null>(null);
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<keyof Staff>("id");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const fetchData = async () => {
     try {
@@ -94,6 +108,7 @@ const Staff = () => {
       );
     }
   };
+
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<string | undefined>();
 
@@ -102,11 +117,7 @@ const Staff = () => {
       await axios.post(`/api/staff/delete/${id}`);
       setStaff(staff.filter((item) => item.id !== id));
       setFilteredStaff(filteredStaff.filter((item) => item.id !== id));
-      showAlert(
-        "success",
-        "Delete Success",
-        "Xoá nhân viên thành công."
-      );
+      showAlert("success", "Delete Success", "Xoá nhân viên thành công.");
     } catch (error) {
       showAlert(
         "error",
@@ -159,11 +170,30 @@ const Staff = () => {
       <div className="dashboard">
         <Sidebar />
         <div className="homeContainer">
-          <div className="widgets"></div>
-          <div className="listContainer">
-            <Button variant="contained" onClick={() => setDialogOpen(true)}>
-              Add new staff
-            </Button>
+          <main className="listContainer">
+            <header
+              style={{
+                fontSize: "32px",
+                fontWeight: "600",
+                marginBottom: "20px",
+                fontFamily: "Inter, serif",
+              }}
+            >
+              Staff List
+            </header>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
+            >
+              <Button variant="contained" onClick={() => setDialogOpen(true)}>
+                Add New Staff
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => downloadExcelFile(showAlert)}
+              >
+                Export
+              </Button>
+            </Box>
             <RegisterForm
               open={dialogOpen}
               onClose={handleClose}
@@ -177,10 +207,96 @@ const Staff = () => {
               fullWidth
               margin="normal"
             />
+            <Box
+              sx={{
+                width: "100%",
+                overflow: "auto",
+                backgroundColor: "#f5f5f5",
+                borderRadius: "10px",
+                padding: "20px",
+              }}
+            >
+              <Table>
+                <TableHead>
+                  <TableRow style={{ backgroundColor: "#e0e7ff" }}>
+                    <TableCell>STT</TableCell>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Phone</TableCell>
+                    <TableCell>Building</TableCell>
+                    <TableCell>Admin</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredStaff
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((item, index) => (
+                      <TableRow hover key={item.id}>
+                        {/* Hiển thị số thứ tự */}
+                        <TableCell>{page * rowsPerPage + index + 1}</TableCell>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell>{item.email}</TableCell>
+                        <TableCell>{item.phone}</TableCell>
+                        <TableCell>{item.buildingId?.buildingName}</TableCell>
+                        <TableCell>
+                          {item.admin ? (
+                            <Typography
+                              sx={{
+                                backgroundColor: "#d4edda",
+                                color: "#155724",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                display: "inline-block",
+                              }}
+                            >
+                              Admin 
+                            </Typography>
+                          ) : (
+                            "Staff"
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Tooltip title="Edit">
+                            <IconButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openUpdateForm(item);
+                              }}
+                              size="small"
+                              style={{
+                                borderRadius: "16px",
+                                marginRight: "10px",
+                              }}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                          {!item.admin && (
+                            <Tooltip title="Delete">
+                              <IconButton
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenDeleteDialog(true);
+                                  setDeleteId(item.id);
+                                }}
+                                size="small"
+                                style={{ borderRadius: "16px" }}
+                              >
+                                <RemoveCircleIcon />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </Box>
             <Dialog open={openDeleteDialog}>
-              <DialogTitle>Xoa nhan vien</DialogTitle>
+              <DialogTitle>Xoá nhân viên</DialogTitle>
               <DialogContent>
-                Ban co chac chan muon xoa nhan vien nay khong?
+                Bạn có chắc chắn muốn xoá nhân viên này không?
               </DialogContent>
               <DialogActions>
                 <Button
@@ -189,68 +305,20 @@ const Staff = () => {
                     setOpenDeleteDialog(false);
                   }}
                 >
-                  Xoa
+                  Xoá
                 </Button>
-                <Button onClick={() => setOpenDeleteDialog(false)}>Huy</Button>
+                <Button onClick={() => setOpenDeleteDialog(false)}>
+                  Cancel
+                </Button>
               </DialogActions>
             </Dialog>
-            <TableContainer component={Paper} className="table">
-              <Table sx={{ minWidth: 650 }} aria-label="staff table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Staff ID</TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Phone</TableCell>
-                    <TableCell>Building</TableCell>
-                    <TableCell>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredStaff.map((item) => {
-                    if (item.admin === true) {
-                      return null;
-                    } else {
-                      return (
-                        <TableRow key={item.id}>
-                          <TableCell>{item.id}</TableCell>
-                          <TableCell>{item.name}</TableCell>
-                          <TableCell>{item.email}</TableCell>
-                          <TableCell>{item.phone}</TableCell>
-                          <TableCell>{item.buildingId?.buildingName}</TableCell>
-                          <TableCell>
-                            <Button
-                              variant="contained"
-                              color="primary"
-                              onClick={() => openUpdateForm(item)}
-                            >
-                              Update
-                            </Button>
-                            <Button
-                              variant="contained"
-                              color="error"
-                              onClick={() => {
-                                setOpenDeleteDialog(true);
-                                setDeleteId(item.id);
-                              }}
-                            >
-                              Delete
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    }
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </div>
-          <UpdateStaffForm
-            open={updateDialogOpen}
-            onClose={() => setUpdateDialogOpen(false)}
-            onSubmit={handleUpdate}
-            staffData={selectedStaff!}
-          />
+            <UpdateStaffForm
+              open={updateDialogOpen}
+              onClose={() => setUpdateDialogOpen(false)}
+              onSubmit={handleUpdate}
+              staffData={selectedStaff!}
+            />
+          </main>
         </div>
       </div>
     </div>

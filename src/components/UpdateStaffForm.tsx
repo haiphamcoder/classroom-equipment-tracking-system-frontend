@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Popup from "reactjs-popup";
-import { Box, TextField, Button, MenuItem } from "@mui/material";
+import { Box, TextField, Button, MenuItem, Alert } from "@mui/material";
 import { Staff } from "../pages/StaffList";
 
 interface UpdateStaffFormProps {
@@ -32,15 +32,29 @@ const UpdateStaffForm = ({
   ];
 
   const [formData, setFormData] = useState<Staff>(
-    staffData || { id: "", name: "", email: "", phone: "", buildingId: { buildingName: "" } }
-
+    staffData || {
+      id: "",
+      name: "",
+      email: "",
+      phone: "",
+      buildingId: { buildingName: "" },
+    }
   );
+
+  const [alert, setAlert] = useState<string | null>(null);
 
   useEffect(() => {
     if (staffData) {
       setFormData({ ...staffData });
     }
   }, [staffData]);
+
+  useEffect(() => {
+    if (alert) {
+      const timeout = setTimeout(() => setAlert(null), 2000); // Cảnh báo tự động biến mất sau 2 giây
+      return () => clearTimeout(timeout);
+    }
+  }, [alert]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -50,11 +64,17 @@ const UpdateStaffForm = ({
   };
 
   const handleSave = () => {
-    const { name, phone, buildingId: { buildingName } } = formData;
+    const {
+      name,
+      phone,
+      buildingId: { buildingName },
+    } = formData;
+
     if (!name || !phone || !buildingName) {
-      alert("Please fill all fields.");
+      setAlert("Please fill in all required fields.");
       return;
     }
+
     onSubmit(formData);
     onClose();
   };
@@ -66,10 +86,32 @@ const UpdateStaffForm = ({
       <Box
         className="modal"
         component="form"
-        sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          p: 4,
+          width: 360,
+          borderRadius: 2,
+          boxShadow: 4,
+          bgcolor: "background.paper",
+        }}
         noValidate
         autoComplete="off"
       >
+        {alert && (
+          <Alert
+            severity="warning"
+            sx={{
+              mb: 2,
+              borderRadius: 1,
+              position: "relative",
+              "& .MuiAlert-action": { display: "none" }, // Loại bỏ nút đóng
+            }}
+          >
+            {alert}
+          </Alert>
+        )}
         <div className="header">Update Staff</div>
         <TextField
           fullWidth
@@ -77,6 +119,7 @@ const UpdateStaffForm = ({
           label="Name"
           value={formData.name}
           onChange={handleChange}
+          helperText={!formData.name && "This field is required"}
         />
         <TextField
           fullWidth
@@ -87,14 +130,15 @@ const UpdateStaffForm = ({
           type="number"
           sx={{
             "& input[type=number]": {
-              MozAppearance: "textfield", // Remove spin buttons in Firefox
+              MozAppearance: "textfield", // Loại bỏ nút tăng giảm trên Firefox
             },
             "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
               {
-                WebkitAppearance: "none", // Remove spin buttons in Chrome, Edge, and Safari
+                WebkitAppearance: "none", // Loại bỏ nút tăng giảm trên Chrome, Edge, và Safari
                 margin: 0,
               },
           }}
+          helperText={!formData.phone && "This field is required"}
         />
         <TextField
           fullWidth
@@ -103,6 +147,7 @@ const UpdateStaffForm = ({
           label="Building Name"
           value={formData.buildingId?.buildingName || ""}
           onChange={handleChange}
+          helperText={!formData.buildingId?.buildingName && "This field is required"}
         >
           {building.map((building) => (
             <MenuItem key={building.value} value={building.value}>

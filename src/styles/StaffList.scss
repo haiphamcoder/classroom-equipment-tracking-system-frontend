@@ -1,0 +1,12 @@
+.staff {
+    display: flex;
+    
+    .homeContainer {
+      flex: 6;
+      background-color: #f8f9fa;
+      
+      main {
+        padding: 20px;
+      }
+    }
+  }
